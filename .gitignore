@@ -1,0 +1,68 @@
+# === C++ Kompilation & Binaries ===
+*.o
+*.obj
+*.out
+*.exe
+*.app
+*.so
+*.dll
+*.dylib
+*.a
+*.lib
+*.lai
+*.la
+
+# === Build-Systeme (CMake, Make, etc.) ===
+# CMake generiert viele temporäre Dateien
+CMakeCache.txt
+CMakeFiles/
+CMakeScripts/
+cmake_install.cmake
+install_manifest.txt
+Makefile
+compile_commands.json
+# Standard-Build-Ordner
+build/
+bin/
+out/
+target/
+
+# === CLion (JetBrains) ===
+# Ignoriert die komplette IDE-Konfiguration und die automatischen Build-Ordner
+.idea/
+cmake-build-*/
+
+# === Visual Studio Code ===
+# Lokale Einstellungen und Debug-Konfigurationen
+.vscode/
+*.code-workspace
+# VS Code C++ Extension temporäre Dateien
+.history/
+ipch/
+.browse.VC.db
+.browse.VC.db-shm
+.browse.VC.db-wal
+
+# === Betriebssystem-spezifisch (Mac & Windows) ===
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+._*
+.Spotlight-V100
+.Trashes
+.DocumentRevisions-V100
+.fseventsd
+
+# Windows
+Thumbs.db
+desktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+# === Debug & Logs ===
+*.log
+*.stackdump
+*.dmp
+*.pdb
