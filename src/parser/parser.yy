@@ -41,7 +41,7 @@
 
 %token <std::string> IDENTIFIER "identifier"
 %token <int> NUMBER "number"
-%nterm <int> body functions function content_item contents bodys;
+%nterm <int> body functions function content_item contents;
 
 %printer { yyo << $$; } <*>;
 
