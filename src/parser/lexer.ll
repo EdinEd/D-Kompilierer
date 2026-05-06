@@ -9,6 +9,7 @@
 %}
 
 %option noyywrap nounput noinput batch debug
+%x COMMENT
 
 %{
   // A number symbol corresponding to the value in S.
@@ -34,14 +35,20 @@ blank [ \t\r]
 
 {blank}+   loc.step ();
 \n+        loc.lines (yyleng); loc.step ();
+"€€"       {BEGIN (COMMENT)}
+<COMMENT>[^\n]* {}
+<COMMENT>"\n" {loc.lines (yyleng); loc.step ();BEGIN(INITIAL);}
 
-"-"        return yy::parser::make_MINUS  (loc);
-"+"        return yy::parser::make_PLUS   (loc);
-"*"        return yy::parser::make_STAR   (loc);
-"/"        return yy::parser::make_SLASH  (loc);
 "("        return yy::parser::make_LPAREN (loc);
 ")"        return yy::parser::make_RPAREN (loc);
-":="       return yy::parser::make_ASSIGN (loc);
+"zurück"   return yy::parser::make_RETURN (loc);
+"int"      return yy::parser::make_TYPE_INT (loc);
+"->"       return yy::parser::make_ARROW (loc);
+"{"        return yy::parser::make_LBRACE (loc);
+"}"        return yy::parser::make_RBRACE (loc);
+";"        return yy::parser::make_SEMICOLON (loc);
+"funk"     return yy::parser::make_FUNK (loc);
+
 
 {int}      return make_NUMBER (yytext, loc);
 {id}       return yy::parser::make_IDENTIFIER (yytext, loc);
