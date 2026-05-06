@@ -26,42 +26,48 @@
 
 %define api.token.prefix {TOK_}
 %token
-  ASSIGN  ":="
-  MINUS   "-"
-  PLUS    "+"
-  STAR    "*"
-  SLASH   "/"
+  EURO   "€"
   LPAREN  "("
   RPAREN  ")"
+  RETURN "zurück"
+  TYPE_INT "int"
+  ARROW  "->"
+  LBRACE  "{"
+  RBRACE  "}"
+  SEMICOLON ";"
+  FUNK "funk"
 ;
 
 %token <std::string> IDENTIFIER "identifier"
 %token <int> NUMBER "number"
-%nterm <int> exp
+%nterm <int> body functions function;
 
 %printer { yyo << $$; } <*>;
 
 %%
 %start unit;
-unit: assignments exp  { drv.result = $2; };
+unit: 
+    functions  { 
+        drv.result = $1; 
+    };
 
-assignments:
+functions:
   %empty                 {}
-| assignments assignment {};
+| functions function     {$$ = $2;};
 
-assignment:
-  "identifier" ":=" exp { drv.variables[$1] = $3; };
+function:
+  FUNK IDENTIFIER LPAREN RPAREN ARROW type LBRACE body RBRACE { $$ = $8;
+  };
 
-%left "+" "-";
-%left "*" "/";
-exp:
-  "number"
-| "identifier"  { $$ = drv.variables[$1]; }
-| exp "+" exp   { $$ = $1 + $3; }
-| exp "-" exp   { $$ = $1 - $3; }
-| exp "*" exp   { $$ = $1 * $3; }
-| exp "/" exp   { $$ = $1 / $3; }
-| "(" exp ")"   { $$ = $2; }
+type:
+  TYPE_INT { 
+  };
+
+body:
+  %empty        { $$ = 0; }
+| RETURN NUMBER SEMICOLON { 
+      $$ = $2; // Reicht die Zahl an 'unit' weiter
+  };
 %%
 
 void yy::parser::error (const location_type& l, const std::string& m)
