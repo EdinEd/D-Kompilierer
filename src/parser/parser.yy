@@ -36,11 +36,12 @@
   RBRACE  "}"
   SEMICOLON ";"
   FUNK "funk"
+  TYPE_VOID "leer"
 ;
 
 %token <std::string> IDENTIFIER "identifier"
 %token <int> NUMBER "number"
-%nterm <int> body functions function;
+%nterm <int> body functions function content_item contents bodys;
 
 %printer { yyo << $$; } <*>;
 
@@ -56,18 +57,25 @@ functions:
 | functions function     {$$ = $2;};
 
 function:
-  FUNK IDENTIFIER LPAREN RPAREN ARROW type LBRACE body RBRACE { $$ = $8;
-  };
+  FUNK IDENTIFIER LPAREN RPAREN ARROW type body{ $$ = $7;};
+  | FUNK IDENTIFIER LPAREN RPAREN body { $$ = $5;};
 
 type:
   TYPE_INT { 
+  }
+  | TYPE_VOID { 
   };
 
 body:
-  %empty        { $$ = 0; }
-| RETURN NUMBER SEMICOLON { 
-      $$ = $2; // Reicht die Zahl an 'unit' weiter
-  };
+  LBRACE contents RBRACE { $$ = $2; };
+
+contents:
+  %empty                 { $$ = 0; }
+| contents content_item  { $$ = $2; };
+
+content_item:
+  RETURN NUMBER SEMICOLON { $$ = $2; }
+| body                    { $$ = $1; };
 %%
 
 void yy::parser::error (const location_type& l, const std::string& m)
