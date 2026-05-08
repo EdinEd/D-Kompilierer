@@ -4,6 +4,7 @@
 #include <map>
 #include <memory>
 #include "parser.hh"
+#include "../ast/ASTNode.hh"
 
 #define YY_DECL yy::parser::symbol_type yylex(Driver &drv)
 YY_DECL;
@@ -12,8 +13,9 @@ class Driver
 {
 public:
     Driver();
-    int result; // ist aus dem GNU example noch
-     std::map<std::string, int> variables;
+    std::unique_ptr<ASTNode> ast_root;
+    std::vector<std::string> errors;
+    void error(const yy::location& loc, const std::string& msg);
 
     int parse(const std::string &f);
     std::string file;

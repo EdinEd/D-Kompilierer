@@ -9,7 +9,7 @@ PARSER_SOURCE = parser.cc
 PARSER_HEADER = parser.hh
 LEXER_SOURCE  = lexer.cc
 
-SOURCES = calc.cc Driver.cc $(PARSER_SOURCE) $(LEXER_SOURCE)
+SOURCES = main.cc Driver.cc $(PARSER_SOURCE) $(LEXER_SOURCE)
 OBJECTS = $(SOURCES:.cc=.o)
 
 all: $(TARGET)
@@ -28,7 +28,7 @@ $(LEXER_SOURCE): lexer.ll $(PARSER_HEADER)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 clean:
-	rm -f $(OBJECTS) $(PARSER_SOURCE) $(PARSER_HEADER) $(LEXER_SOURCE) location.hh calc.o
+	rm -f $(OBJECTS) $(PARSER_SOURCE) $(PARSER_HEADER) $(LEXER_SOURCE) location.hh main.o
 
 cleanall: clean
 	rm -f $(TARGET) $(OBJECTS) $(PARSER_SOURCE) $(PARSER_HEADER) $(LEXER_SOURCE) location.hh

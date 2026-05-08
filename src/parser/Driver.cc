@@ -3,8 +3,7 @@
 
 Driver::Driver() : trace_parsing(false), trace_scanning(false)
 {
-  variables["one"] = 1;
-  variables["two"] = 2;
+
 }
 
 int Driver::parse(const std::string &f)
@@ -17,4 +16,12 @@ int Driver::parse(const std::string &f)
   int res = parse();
   scan_end();
   return res;
+}
+
+void Driver::error(const yy::location &l, const std::string &m)
+{
+  std::string err = "ERROR -> " + std::to_string(l.begin.line) +
+                    ":" + std::to_string(l.begin.column) + ": " + m;
+  errors.push_back(err);
+  std::cerr << err << std::endl;
 }
