@@ -1,3 +1,10 @@
+# === Allgemein ===
+lexer.cc
+location.hh
+parser.cc
+parser.hh
+
+
 # === C++ Kompilation & Binaries ===
 *.o
 *.obj
