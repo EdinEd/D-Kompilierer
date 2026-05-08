@@ -41,7 +41,7 @@
 
 %token <std::string> IDENTIFIER "identifier"
 %token <int> NUMBER "number"
-%nterm <int> body functions function content_item contents;
+//%nterm <int> body functions function content_item contents;
 
 %printer { yyo << $$; } <*>;
 
@@ -49,16 +49,17 @@
 %start unit;
 unit: 
     functions  { 
-        drv.result = $1; 
+        
     };
 
 functions:
   %empty                 {}
-| functions function     {$$ = $2;};
+| functions function     {};
 
 function:
-  FUNK IDENTIFIER LPAREN RPAREN ARROW type body{ $$ = $7;};
-  | FUNK IDENTIFIER LPAREN RPAREN body { $$ = $5;};
+  FUNK IDENTIFIER LPAREN RPAREN ARROW type body{ };
+  | FUNK IDENTIFIER LPAREN RPAREN body { }
+  | error RPAREN{ yyerrok; };
 
 type:
   TYPE_INT { 
@@ -67,18 +68,19 @@ type:
   };
 
 body:
-  LBRACE contents RBRACE { $$ = $2; };
+  LBRACE contents RBRACE {  };
 
 contents:
-  %empty                 { $$ = 0; }
-| contents content_item  { $$ = $2; };
+  %empty                 {  }
+| contents content_item  {};
 
 content_item:
-  RETURN NUMBER SEMICOLON { $$ = $2; }
-| body                    { $$ = $1; };
+  RETURN NUMBER SEMICOLON {std::cout << $2 << std::endl;}
+| body                    {}
+| error SEMICOLON         {yyerrok;}
 %%
 
 void yy::parser::error (const location_type& l, const std::string& m)
 {
-  std::cerr << l << ": " << m << '\n';
+  drv.error(l, m);
 }

@@ -11,8 +11,18 @@ int main(int argc, char *argv[])
         else if (argv[i] == std::string("-s"))
             drv.trace_scanning = true;
         else if (!drv.parse(argv[i]))
-            std::cout << drv.result << '\n';
+            std::cout << "Fertig" << '\n';
         else
             res = 1;
-    return res;
+
+    if (drv.errors.empty())
+    {
+        std::cout << "Parsing successful!" << std::endl;
+        return 0;
+    }
+    else
+    {
+        std::cout << "Parsing failed with " << drv.errors.size() << " error(s)." << std::endl;
+        return 1;
+    }
 }
