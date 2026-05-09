@@ -24,6 +24,16 @@ int main(int argc, char *argv[])
             std::cout << "Fertig" << '\n';
         else
             res = 1;
+    if (drv.errors.empty())
+    {
+        std::cout << "Parsing successful!" << std::endl;
+        }
+    else
+    {
+        std::cout << "Parsing completed with errors." << std::endl;
+        std::cout << "Parsing failed with " << drv.errors.size() << " error(s)." << std::endl;
+        return 1;
+    }
     if (drv.ast_root.get() != nullptr)
     {
         std::cout << "AST generated successfully!" << std::endl;
@@ -33,14 +43,5 @@ int main(int argc, char *argv[])
     {
         std::cout << "Failed to generate AST." << std::endl;
     }
-    if (drv.errors.empty())
-    {
-        std::cout << "Parsing successful!" << std::endl;
-        return 0;
-    }
-    else
-    {
-        std::cout << "Parsing failed with " << drv.errors.size() << " error(s)." << std::endl;
-        return 1;
-    }
+    return 0;
 }

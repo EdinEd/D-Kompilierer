@@ -17,9 +17,10 @@
   make_NUMBER (const std::string &s, const yy::parser::location_type& loc);
 %}
 
-id    [a-zA-Z][a-zA-Z_0-9]*
-int   [0-9]+
-blank [ \t\r]
+id      [a-zA-ZÄÖÜ][a-zA-Z_0-9ÄÖÜ]*
+string  \"(\\.|[^\\"])*\"
+int     [0-9]+
+blank   [ \t\r]
 
 %{
   // Code run each time a pattern is matched.
@@ -43,6 +44,7 @@ blank [ \t\r]
 ")"        return yy::parser::make_RPAREN (loc);
 "zurück"   return yy::parser::make_RETURN (loc);
 "zahl"      return yy::parser::make_TYPE_INT (loc);
+"faden"     return yy::parser::make_TYPE_STRING (loc);
 "->"       return yy::parser::make_ARROW (loc);
 "{"        return yy::parser::make_LBRACE (loc);
 "}"        return yy::parser::make_RBRACE (loc);
@@ -52,6 +54,7 @@ blank [ \t\r]
 
 
 {int}      return make_NUMBER (yytext, loc);
+{string}   return yy::parser::make_STRING (yytext, loc);
 {id}       return yy::parser::make_IDENTIFIER (yytext, loc);
 .          {
              throw yy::parser::syntax_error
