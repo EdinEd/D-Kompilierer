@@ -2,5 +2,44 @@ cmake_minimum_required(VERSION 3.28)
 project(CoCo2026_TuesdayTeamB_Edich_Lenz)
 
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-add_executable(CoCo2026_TuesdayTeamB_Edich_Lenz main.cpp)
+find_package(BISON 3.8.2 REQUIRED)
+find_package(FLEX REQUIRED)
+
+include_directories(
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/ast
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/parser
+    ${CMAKE_CURRENT_BINARY_DIR} # WICHTIG: Hier landen die generierten parser.hh/cc
+)
+
+BISON_TARGET(
+    MyParser 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/parser/parser.yy 
+    ${CMAKE_CURRENT_BINARY_DIR}/parser.cc
+    COMPILE_FLAGS "-d" # Sorgt dafür, dass der Header (parser.hh) generiert wird
+)
+
+FLEX_TARGET(
+    MyScanner 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/parser/lexer.ll 
+    ${CMAKE_CURRENT_BINARY_DIR}/lexer.cc
+)
+
+ADD_FLEX_BISON_DEPENDENCY(MyScanner MyParser)
+
+add_executable(${PROJECT_NAME}
+    # Deine manuell geschriebenen C++ Dateien
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/parser/Driver.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/ast/ASTNode.cc
+    
+    # Platzhalter für später, falls du die Symboltabelle wieder einbaust:
+    # ${CMAKE_CURRENT_SOURCE_DIR}/src/symboltable/Symboltable.cpp
+    
+    # Die automatisch generierten C++ Dateien
+    ${BISON_MyParser_OUTPUTS}
+    ${FLEX_MyScanner_OUTPUTS}
+)
+
+set_target_properties(${PROJECT_NAME} PROPERTIES OUTPUT_NAME "compiler")
