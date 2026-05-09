@@ -32,6 +32,7 @@ add_executable(${PROJECT_NAME}
     ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/parser/Driver.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/ast/ASTNode.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/ast/ASTTraversal.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/ast/SourceLocation.hh
     
     # Platzhalter für später, falls du die Symboltabelle wieder einbaust:

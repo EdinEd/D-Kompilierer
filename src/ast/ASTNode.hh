@@ -20,31 +20,39 @@ enum class Type
     BOOLEAN,
     VOID
 };
+
+enum class ASTNodeType
+{
+    NUMBER,
+    STRING,
+    VAR_REF,
+    BINARY_OP,
+    VAR_DECL,
+    RETURN,
+    BLOCK,
+    FUNCTION_DEF,
+    UNIT
+};
 class ASTNode
 {
 public:
-    ASTNode(SourceLocation loc) : location(loc) {}
+    ASTNode(SourceLocation loc, ASTNodeType type) : location(loc), node_type(type) {}
     virtual ~ASTNode() = default;
     SourceLocation location;
-
-private:
+    ASTNodeType node_type;
 };
 
 class NumberNode : public ASTNode
 {
 public:
-    NumberNode(SourceLocation loc, int value) : ASTNode(loc), value(value) {}
-
-private:
+    NumberNode(SourceLocation loc, int value) : ASTNode(loc, ASTNodeType::NUMBER), value(value) {}
     int value;
 };
 
 class StringNode : public ASTNode
 {
 public:
-    StringNode(SourceLocation loc, const std::string &value) : ASTNode(loc), value(value) {}
-
-private:
+    StringNode(SourceLocation loc, const std::string &value) : ASTNode(loc, ASTNodeType::STRING), value(value) {}
     std::string value;
 };
 
@@ -52,16 +60,14 @@ class VarRefNode : public ASTNode
 {
 public:
     std::string name;
-    VarRefNode(SourceLocation loc, const std::string &n) : ASTNode(loc), name(n) {}
+    VarRefNode(SourceLocation loc, const std::string &n) : ASTNode(loc, ASTNodeType::VAR_REF), name(n) {}
 };
 
 class BinaryOpNode : public ASTNode
 {
 public:
     BinaryOpNode(SourceLocation loc, OperationType op, std::unique_ptr<ASTNode> l, std::unique_ptr<ASTNode> r)
-        : ASTNode(loc), op(op), left(std::move(l)), right(std::move(r)) {}
-
-private:
+        : ASTNode(loc, ASTNodeType::BINARY_OP), op(op), left(std::move(l)), right(std::move(r)) {}
     OperationType op;
     std::unique_ptr<ASTNode> left;
     std::unique_ptr<ASTNode> right;
@@ -75,7 +81,7 @@ public:
     std::unique_ptr<ASTNode> init_value;
 
     VarDeclNode(SourceLocation loc, Type t, const std::string &n, std::unique_ptr<ASTNode> init)
-        : ASTNode(loc), type(t), name(n), init_value(std::move(init)) {}
+        : ASTNode(loc, ASTNodeType::VAR_DECL), type(t), name(n), init_value(std::move(init)) {}
 };
 
 class ReturnNode : public ASTNode
@@ -83,7 +89,7 @@ class ReturnNode : public ASTNode
 public:
     std::unique_ptr<ASTNode> expression;
 
-    ReturnNode(SourceLocation loc, std::unique_ptr<ASTNode> expr) : ASTNode(loc), expression(std::move(expr)) {}
+    ReturnNode(SourceLocation loc, std::unique_ptr<ASTNode> expr) : ASTNode(loc, ASTNodeType::RETURN), expression(std::move(expr)) {}
 };
 
 class BlockNode : public ASTNode
@@ -95,6 +101,7 @@ public:
     {
         statements.push_back(std::move(stmt));
     }
+    BlockNode(SourceLocation loc) : ASTNode(loc, ASTNodeType::BLOCK) {}
 };
 class FunctionDefNode : public ASTNode
 {
@@ -104,7 +111,7 @@ public:
     // std::vector<std::pair<Type, std::string>> parameters;
     std::vector<std::unique_ptr<BlockNode>> body;
     FunctionDefNode(SourceLocation loc, Type ret_type, const std::string &name)
-        : ASTNode(loc), return_type(ret_type), name(name) {}
+        : ASTNode(loc, ASTNodeType::FUNCTION_DEF), return_type(ret_type), name(name) {}
 };
 
 class UnitNode : public ASTNode
@@ -112,7 +119,7 @@ class UnitNode : public ASTNode
 public:
     std::vector<std::unique_ptr<FunctionDefNode>> functions;
 
-    UnitNode(SourceLocation l) : ASTNode(l) {}
+    UnitNode(SourceLocation l) : ASTNode(l, ASTNodeType::UNIT) {}
     void addFunction(std::unique_ptr<FunctionDefNode> func) {
         functions.push_back(std::move(func));
     }

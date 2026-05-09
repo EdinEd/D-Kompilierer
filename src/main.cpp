@@ -1,5 +1,15 @@
 #include <iostream>
 #include "Driver.hh"
+#include "ASTNode.hh"
+#include "ASTTraversal.hh"
+
+void traverseAST(UnitNode *rootNode)
+{
+    // Hier kannst du die ASTTraversal-Klasse verwenden, um den AST zu durchlaufen
+    ASTtraversal traversal;
+    std::cout << "==== PRINTING AST ====" << std::endl;
+    traversal.visit(rootNode);
+}
 
 int main(int argc, char *argv[])
 {
@@ -14,9 +24,13 @@ int main(int argc, char *argv[])
             std::cout << "Fertig" << '\n';
         else
             res = 1;
-    if(drv.ast_root.get() != nullptr) {
+    if (drv.ast_root.get() != nullptr)
+    {
         std::cout << "AST generated successfully!" << std::endl;
-    } else {
+        traverseAST(drv.ast_root.get());
+    }
+    else
+    {
         std::cout << "Failed to generate AST." << std::endl;
     }
     if (drv.errors.empty())
