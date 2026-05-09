@@ -9,7 +9,14 @@
 
 %code requires {
   # include <string>
+  #include <vector>
+  #include <memory>
   class Driver;
+  class ASTNode;
+  class BlockNode;
+  class FunctionDefNode;
+  class UnitNode;
+  enum class Type;
 }
 
 // Der Parser erhält eine Referenz auf den "Driver" (Kontext)
@@ -22,6 +29,17 @@
 
 %code {
   #include "Driver.hh"
+  #include "../ast/SourceLocation.hh"
+  #include "../ast/ASTNode.hh"
+
+  inline SourceLocation toASTLoc(const yy::location& l) {
+      return SourceLocation(
+          l.begin.line, 
+          l.begin.column, 
+          l.end.line, 
+          l.end.column
+      );
+  }
 }
 
 %define api.token.prefix {TOK_}
@@ -42,30 +60,36 @@
 %token <std::string> IDENTIFIER "identifier"
 %token <int> NUMBER "number"
 //%nterm <int> body functions function content_item contents;
+%nterm <std::unique_ptr<UnitNode>> unit;
+%nterm <std::unique_ptr<BlockNode>> body;
+%nterm <std::unique_ptr<UnitNode>> functions;
+%nterm <std::unique_ptr<FunctionDefNode>> function;
+%nterm <std::unique_ptr<ASTNode>> content_item;
+%nterm <Type> type;
 
-%printer { yyo << $$; } <*>;
+%printer { yyo << $$; } <int> <std::string>;
+%printer { yyo << "[AST Node]"; } <std::unique_ptr<ASTNode>> <std::unique_ptr<BlockNode>> <std::unique_ptr<UnitNode>> <std::unique_ptr<FunctionDefNode>> <Type>; 
+%printer { yyo << "[Function List]"; } <std::vector<std::unique_ptr<FunctionDefNode>>>;
 
 %%
 %start unit;
 unit: 
     functions  { 
-        
+        drv.ast_root = std::move($1);
     };
 
 functions:
-  %empty                 {}
-| functions function     {};
+  %empty                 {$$ = std::make_unique<UnitNode>(toASTLoc(@$));}
+| functions function     {$1->addFunction(std::move($2)); $$ = std::move($1);};
 
 function:
-  FUNK IDENTIFIER LPAREN RPAREN ARROW type body{ };
-  | FUNK IDENTIFIER LPAREN RPAREN body { }
+  FUNK IDENTIFIER LPAREN RPAREN ARROW type body{ $$ = std::make_unique<FunctionDefNode>(toASTLoc(@$), $6, $2); }
+  | FUNK IDENTIFIER LPAREN RPAREN body { $$ = std::make_unique<FunctionDefNode>(toASTLoc(@$), Type::VOID, $2); }
   | error RPAREN{ yyerrok; };
 
 type:
-  TYPE_INT { 
-  }
-  | TYPE_VOID { 
-  };
+  TYPE_INT { $$ = Type::INTEGER; }
+  | TYPE_VOID { $$ = Type::VOID; };
 
 body:
   LBRACE contents RBRACE {  };

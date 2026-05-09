@@ -14,7 +14,11 @@ int main(int argc, char *argv[])
             std::cout << "Fertig" << '\n';
         else
             res = 1;
-
+    if(drv.ast_root.get() != nullptr) {
+        std::cout << "AST generated successfully!" << std::endl;
+    } else {
+        std::cout << "Failed to generate AST." << std::endl;
+    }
     if (drv.errors.empty())
     {
         std::cout << "Parsing successful!" << std::endl;
