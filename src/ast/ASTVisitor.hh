@@ -1,7 +1,7 @@
 #pragma once
 #include "ASTNode.hh"
 
-class ASTtraversal {
+class ASTVisitor {
 public:
     void visit(UnitNode* rootNode);
 

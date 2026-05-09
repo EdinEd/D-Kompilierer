@@ -1,4 +1,4 @@
-#include "ASTTraversal.hh"
+#include "ASTVisitor.hh"
 #include <iostream>
 
 std::string printRetrunType(Type &t)
@@ -41,7 +41,7 @@ std::string getNodeTypeName(ASTNodeType &t)
     }
 }
 
-void ASTtraversal::visit(UnitNode *rootNode)
+void ASTVisitor::visit(UnitNode *rootNode)
 {
     for (const auto &func : rootNode->functions)
     {
@@ -50,7 +50,7 @@ void ASTtraversal::visit(UnitNode *rootNode)
     }
 }
 
-void ASTtraversal::visit(FunctionDefNode *node)
+void ASTVisitor::visit(FunctionDefNode *node)
 {
     if (node->body)
     {

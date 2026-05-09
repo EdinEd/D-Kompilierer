@@ -1,14 +1,14 @@
 #include <iostream>
 #include "Driver.hh"
 #include "ASTNode.hh"
-#include "ASTTraversal.hh"
+#include "ASTVisitor.hh"
 
 void traverseAST(UnitNode *rootNode)
 {
-    // Hier kannst du die ASTTraversal-Klasse verwenden, um den AST zu durchlaufen
-    ASTtraversal traversal;
+    // Hier kannst du die ASTVisitor-Klasse verwenden, um den AST zu durchlaufen
+    ASTVisitor visitor;
     std::cout << "==== PRINTING AST ====" << std::endl;
-    traversal.visit(rootNode);
+    visitor.visit(rootNode);
 }
 
 int main(int argc, char *argv[])
