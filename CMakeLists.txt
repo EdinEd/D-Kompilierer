@@ -32,11 +32,9 @@ add_executable(${PROJECT_NAME}
     ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/parser/Driver.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/ast/ASTNode.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/ast/ASTPrinter.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/ast/ASTVisitor.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/ast/SourceLocation.hh
-    
-    # Platzhalter für später, falls du die Symboltabelle wieder einbaust:
-    # ${CMAKE_CURRENT_SOURCE_DIR}/src/symboltable/Symboltable.cpp
         ${BISON_MyParser_OUTPUTS}
     ${FLEX_MyScanner_OUTPUTS}
 )

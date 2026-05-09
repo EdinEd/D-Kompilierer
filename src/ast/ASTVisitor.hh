@@ -1,17 +1,28 @@
 #pragma once
-#include "ASTNode.hh"
 
-class ASTVisitor {
+class ASTNode;
+class NumberNode;
+class StringNode;
+class VarRefNode;
+class BinaryOpNode;
+class VarDeclNode;
+class ReturnNode;
+class BlockNode;
+class FunctionDefNode;
+class UnitNode;
+
+class ASTVisitor
+{
 public:
-    void visit(UnitNode* rootNode);
+    virtual void visit(UnitNode *rootNode) = 0;
+    virtual ~ASTVisitor();
 
-private:
-    void visit(FunctionDefNode* node);
-    void visit(BlockNode* node);
-    void visit(ReturnNode* node);
-    void visit(VarDeclNode* node);
-    void visit(BinaryOpNode* node);
-    void visit(VarRefNode* node);
-    void visit(StringNode* node);
-    void visit(NumberNode* node);
+    virtual void visit(FunctionDefNode *node) = 0;
+    virtual void visit(BlockNode *node) = 0;
+    virtual void visit(ReturnNode *node) = 0;
+    virtual void visit(VarDeclNode *node) = 0;
+    virtual void visit(BinaryOpNode *node) = 0;
+    virtual void visit(VarRefNode *node) = 0;
+    virtual void visit(StringNode *node) = 0;
+    virtual void visit(NumberNode *node) = 0;
 };

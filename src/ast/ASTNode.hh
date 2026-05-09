@@ -3,6 +3,8 @@
 #include <iostream>
 #include <memory>
 #include "SourceLocation.hh"
+#include "ASTVisitor.hh"
+
 
 enum class OperationType
 {
@@ -40,6 +42,7 @@ public:
     virtual ~ASTNode() = default;
     SourceLocation location;
     ASTNodeType node_type;
+    virtual void accept(ASTVisitor& visitor) = 0;
 };
 
 class NumberNode : public ASTNode
@@ -47,6 +50,7 @@ class NumberNode : public ASTNode
 public:
     NumberNode(SourceLocation loc, int &value) : ASTNode(loc, ASTNodeType::NUMBER), value(value) {}
     int value;
+    void accept(ASTVisitor& visitor) override;
 };
 
 class StringNode : public ASTNode
@@ -54,6 +58,7 @@ class StringNode : public ASTNode
 public:
     StringNode(SourceLocation loc, const std::string &value) : ASTNode(loc, ASTNodeType::STRING), value(value) {}
     std::string value;
+    void accept(ASTVisitor& visitor) override;
 };
 
 class VarRefNode : public ASTNode
@@ -61,6 +66,7 @@ class VarRefNode : public ASTNode
 public:
     std::string name;
     VarRefNode(SourceLocation loc, const std::string &n) : ASTNode(loc, ASTNodeType::VAR_REF), name(n) {}
+    void accept(ASTVisitor& visitor) override;
 };
 
 class BinaryOpNode : public ASTNode
@@ -71,6 +77,7 @@ public:
     OperationType op;
     std::unique_ptr<ASTNode> left;
     std::unique_ptr<ASTNode> right;
+    void accept(ASTVisitor& visitor) override;
 };
 
 class VarDeclNode : public ASTNode
@@ -82,6 +89,7 @@ public:
 
     VarDeclNode(SourceLocation loc, Type t, const std::string &n, std::unique_ptr<ASTNode> init)
         : ASTNode(loc, ASTNodeType::VAR_DECL), type(t), name(n), init_value(std::move(init)) {}
+    void accept(ASTVisitor& visitor) override;
 };
 
 class ReturnNode : public ASTNode
@@ -90,6 +98,7 @@ public:
     std::unique_ptr<ASTNode> expression;
 
     ReturnNode(SourceLocation loc, std::unique_ptr<ASTNode> expr) : ASTNode(loc, ASTNodeType::RETURN), expression(std::move(expr)) {}
+    void accept(ASTVisitor& visitor) override;
 };
 
 class BlockNode : public ASTNode
@@ -102,6 +111,7 @@ public:
         statements.push_back(std::move(stmt));
     }
     BlockNode(SourceLocation loc) : ASTNode(loc, ASTNodeType::BLOCK) {}
+    void accept(ASTVisitor& visitor) override;
 };
 class FunctionDefNode : public ASTNode
 {
@@ -112,6 +122,7 @@ public:
     std::unique_ptr<BlockNode> body;
     FunctionDefNode(SourceLocation loc, Type ret_type, const std::string &name, std::unique_ptr<BlockNode> body = nullptr)
         : ASTNode(loc, ASTNodeType::FUNCTION_DEF), return_type(ret_type), name(name), body(std::move(body)) {}
+    void accept(ASTVisitor& visitor) override;
 };
 
 class UnitNode : public ASTNode
@@ -124,6 +135,7 @@ public:
     {
         functions.push_back(std::move(func));
     }
+    void accept(ASTVisitor& visitor) override;
 };
 
 #endif // ! ASTNODE_HH

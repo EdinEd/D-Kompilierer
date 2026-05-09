@@ -1,14 +1,15 @@
 #include <iostream>
 #include "Driver.hh"
 #include "ASTNode.hh"
-#include "ASTVisitor.hh"
+#include "ASTPrinter.hh"
+#include <memory>
 
 void traverseAST(UnitNode *rootNode)
 {
     // Hier kannst du die ASTVisitor-Klasse verwenden, um den AST zu durchlaufen
-    ASTVisitor visitor;
+    std::shared_ptr<ASTVisitor> visitorPtr = std::make_shared<ASTPrinter>();
     std::cout << "==== PRINTING AST ====" << std::endl;
-    visitor.visit(rootNode);
+    visitorPtr->visit(rootNode);
 }
 
 int main(int argc, char *argv[])
