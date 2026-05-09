@@ -75,15 +75,14 @@ void ASTPrinter::visit(FunctionDefNode *node)
 void ASTPrinter::visit(BlockNode *node)
 {
     printIndent();
-    indent_level++; // Einrückung erhöhen
+    indent_level++;
     std::cout << "| BLOCK BEGIN" << std::endl;
     for (const auto &stmt : node->statements)
     {
         stmt->accept(*this);
     }
-    indent_level--; // Einrückung zurücksetzen
+    indent_level--; 
 
-    printIndent();
 }
 
 void ASTPrinter::visit(ReturnNode *node)
@@ -120,7 +119,7 @@ void ASTPrinter::visit(VarDeclNode *node)
 void ASTPrinter::visit(BinaryOpNode *node)
 {
     printIndent();
-    std::cout << "| OP [" << (int)node->op << "]" << std::endl; // Hier könntest du noch ein Op-zu-String Mapping machen
+    std::cout << "| OP [" << (int)node->op << "]" << std::endl;
 
     indent_level++;
     if (node->left)
