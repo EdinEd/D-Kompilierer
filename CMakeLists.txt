@@ -10,14 +10,14 @@ find_package(FLEX REQUIRED)
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/src/ast
     ${CMAKE_CURRENT_SOURCE_DIR}/src/parser
-    ${CMAKE_CURRENT_BINARY_DIR} # WICHTIG: Hier landen die generierten parser.hh/cc
+    ${CMAKE_CURRENT_BINARY_DIR}
 )
 
 BISON_TARGET(
     MyParser 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/parser/parser.yy 
     ${CMAKE_CURRENT_BINARY_DIR}/parser.cc
-    COMPILE_FLAGS "-d" # Sorgt dafür, dass der Header (parser.hh) generiert wird
+    COMPILE_FLAGS "-d"
 )
 
 FLEX_TARGET(
@@ -29,16 +29,13 @@ FLEX_TARGET(
 ADD_FLEX_BISON_DEPENDENCY(MyScanner MyParser)
 
 add_executable(${PROJECT_NAME}
-    # Deine manuell geschriebenen C++ Dateien
     ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/parser/Driver.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/ast/ASTNode.cc
-    
-    # Platzhalter für später, falls du die Symboltabelle wieder einbaust:
-    # ${CMAKE_CURRENT_SOURCE_DIR}/src/symboltable/Symboltable.cpp
-    
-    # Die automatisch generierten C++ Dateien
-    ${BISON_MyParser_OUTPUTS}
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/ast/ASTPrinter.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/ast/ASTVisitor.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/ast/SourceLocation.hh
+        ${BISON_MyParser_OUTPUTS}
     ${FLEX_MyScanner_OUTPUTS}
 )
 

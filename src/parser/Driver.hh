@@ -13,7 +13,7 @@ class Driver
 {
 public:
     Driver();
-    std::unique_ptr<ASTNode> ast_root;
+    std::unique_ptr<UnitNode> ast_root;
     std::vector<std::string> errors;
     void error(const yy::location& loc, const std::string& msg);
 
