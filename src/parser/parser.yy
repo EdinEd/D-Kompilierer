@@ -61,7 +61,7 @@
 %token <int> NUMBER "number"
 //%nterm <int> body functions function content_item contents;
 %nterm <std::unique_ptr<UnitNode>> unit;
-%nterm <std::unique_ptr<BlockNode>> body;
+%nterm <std::unique_ptr<BlockNode>> body contents;
 %nterm <std::unique_ptr<UnitNode>> functions;
 %nterm <std::unique_ptr<FunctionDefNode>> function;
 %nterm <std::unique_ptr<ASTNode>> content_item;
@@ -83,8 +83,8 @@ functions:
 | functions function     {$1->addFunction(std::move($2)); $$ = std::move($1);};
 
 function:
-  FUNK IDENTIFIER LPAREN RPAREN ARROW type body{ $$ = std::make_unique<FunctionDefNode>(toASTLoc(@$), $6, $2); }
-  | FUNK IDENTIFIER LPAREN RPAREN body { $$ = std::make_unique<FunctionDefNode>(toASTLoc(@$), Type::VOID, $2); }
+  FUNK IDENTIFIER LPAREN RPAREN ARROW type body{ $$ = std::make_unique<FunctionDefNode>(toASTLoc(@$), $6, $2, std::move($7)); }
+  | FUNK IDENTIFIER LPAREN RPAREN body { $$ = std::make_unique<FunctionDefNode>(toASTLoc(@$), Type::VOID, $2, std::move($5)); }
   | error RPAREN{ yyerrok; };
 
 type:
@@ -92,14 +92,14 @@ type:
   | TYPE_VOID { $$ = Type::VOID; };
 
 body:
-  LBRACE contents RBRACE {  };
+  LBRACE contents RBRACE { $$ = std::move($2); };
 
 contents:
-  %empty                 {  }
-| contents content_item  {};
+  %empty                 { $$ = std::make_unique<BlockNode>(toASTLoc(@$)); }
+| contents content_item  {$1->addStatement(std::move($2)); $$ = std::move($1);};
 
 content_item:
-  RETURN NUMBER SEMICOLON {std::cout << $2 << std::endl;}
+  RETURN NUMBER SEMICOLON { $$ = std::make_unique<ReturnNode>(toASTLoc(@$), std::make_unique<ASTNode>(toASTLoc(@2), ASTNodeType::NUMBER)); }
 | body                    {}
 | error SEMICOLON         {yyerrok;}
 %%

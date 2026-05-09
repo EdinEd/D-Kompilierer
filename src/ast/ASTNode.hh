@@ -109,9 +109,9 @@ public:
     Type return_type;
     std::string name;
     // std::vector<std::pair<Type, std::string>> parameters;
-    std::vector<std::unique_ptr<BlockNode>> body;
-    FunctionDefNode(SourceLocation loc, Type ret_type, const std::string &name)
-        : ASTNode(loc, ASTNodeType::FUNCTION_DEF), return_type(ret_type), name(name) {}
+    std::unique_ptr<BlockNode> body;
+    FunctionDefNode(SourceLocation loc, Type ret_type, const std::string &name, std::unique_ptr<BlockNode> body = nullptr)
+        : ASTNode(loc, ASTNodeType::FUNCTION_DEF), return_type(ret_type), name(name), body(std::move(body)) {}
 };
 
 class UnitNode : public ASTNode
@@ -120,7 +120,8 @@ public:
     std::vector<std::unique_ptr<FunctionDefNode>> functions;
 
     UnitNode(SourceLocation l) : ASTNode(l, ASTNodeType::UNIT) {}
-    void addFunction(std::unique_ptr<FunctionDefNode> func) {
+    void addFunction(std::unique_ptr<FunctionDefNode> func)
+    {
         functions.push_back(std::move(func));
     }
 };
