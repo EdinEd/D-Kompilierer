@@ -19,7 +19,10 @@
   class VarDeclNode;
   class ReturnNode;
   class NumberNode;
+  class StringNode;
+  class BinaryOpNode;
   enum class Type;
+  enum class OperationType;
 }
 
 // Der Parser erhält eine Referenz auf den "Driver" (Kontext)
@@ -74,6 +77,7 @@
 %nterm <Type> type;
 %nterm <std::unique_ptr<VarDeclNode>> var_decl;
 %nterm <std::unique_ptr<ReturnNode>> return_statement;
+%nterm <std::unique_ptr<BinaryOpNode>> var_assign;
 
 %printer { yyo << $$; } <int> <std::string>;
 %printer { yyo << "[AST Node]"; } <std::unique_ptr<ASTNode>> <std::unique_ptr<BlockNode>> <std::unique_ptr<UnitNode>> <std::unique_ptr<FunctionDefNode>> <Type>; 
@@ -105,6 +109,10 @@ var_decl:
   | TYPE_INT IDENTIFIER ASSIGN NUMBER SEMICOLON { $$ = std::make_unique<VarDeclNode>(toASTLoc(@$), Type::INTEGER, $2, std::make_unique<NumberNode>(toASTLoc(@4), $4)); }
   | TYPE_STRING IDENTIFIER ASSIGN STRING SEMICOLON { $$ = std::make_unique<VarDeclNode>(toASTLoc(@$), Type::STRING, $2, std::make_unique<StringNode>(toASTLoc(@4), $4)); };
 
+var_assign:
+  IDENTIFIER ASSIGN NUMBER SEMICOLON { $$ = std::make_unique<BinaryOpNode>(toASTLoc(@$), OperationType::ASSIGN, std::make_unique<VarRefNode>(toASTLoc(@1), $1), std::make_unique<NumberNode>(toASTLoc(@3), $3)); }
+  | IDENTIFIER ASSIGN STRING SEMICOLON { $$ = std::make_unique<BinaryOpNode>(toASTLoc(@$), OperationType::ASSIGN, std::make_unique<VarRefNode>(toASTLoc(@1), $1), std::make_unique<StringNode>(toASTLoc(@3), $3)); };
+
 body:
   LBRACE contents RBRACE { $$ = std::move($2); };
 
@@ -116,6 +124,7 @@ content_item:
   return_statement { $$ = std::move($1); }
 | var_decl                {$$ = std::move($1);}
 | body                    {$$ = std::move($1);}
+| var_assign              {$$ = std::move($1);}
 | error SEMICOLON         {yyerrok;}
 
 return_statement:
