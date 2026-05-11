@@ -51,6 +51,7 @@ blank   [ \t\r]
 ";"        return yy::parser::make_SEMICOLON (loc);
 "funk"     return yy::parser::make_FUNK (loc);
 "leer"     return yy::parser::make_TYPE_VOID (loc);
+"="        return yy::parser::make_ASSIGN (loc);
 
 
 {int}      return make_NUMBER (yytext, loc);

@@ -14,9 +14,9 @@ std::string printRetrunType(Type &t)
     switch (t)
     {
     case Type::INTEGER:
-        return "ganz";
+        return "zahl";
     case Type::STRING:
-        return "text";
+        return "faden";
     case Type::BOOLEAN:
         return "bool";
     case Type::VOID:

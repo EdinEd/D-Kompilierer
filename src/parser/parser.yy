@@ -59,6 +59,7 @@
   SEMICOLON ";"
   FUNK "funk"
   TYPE_VOID "leer"
+  ASSIGN "="
 ;
 
 %token <std::string> IDENTIFIER "identifier"
@@ -100,7 +101,9 @@ type:
 
 var_decl:
   TYPE_INT IDENTIFIER SEMICOLON { $$ = std::make_unique<VarDeclNode>(toASTLoc(@$), Type::INTEGER, $2, nullptr); }
-  | TYPE_STRING IDENTIFIER SEMICOLON { $$ = std::make_unique<VarDeclNode>(toASTLoc(@$), Type::STRING, $2, nullptr); };
+  | TYPE_STRING IDENTIFIER SEMICOLON { $$ = std::make_unique<VarDeclNode>(toASTLoc(@$), Type::STRING, $2, nullptr); }
+  | TYPE_INT IDENTIFIER ASSIGN NUMBER SEMICOLON { $$ = std::make_unique<VarDeclNode>(toASTLoc(@$), Type::INTEGER, $2, std::make_unique<NumberNode>(toASTLoc(@4), $4)); }
+  | TYPE_STRING IDENTIFIER ASSIGN STRING SEMICOLON { $$ = std::make_unique<VarDeclNode>(toASTLoc(@$), Type::STRING, $2, std::make_unique<StringNode>(toASTLoc(@4), $4)); };
 
 body:
   LBRACE contents RBRACE { $$ = std::move($2); };
