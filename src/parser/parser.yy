@@ -36,6 +36,7 @@
 %code {
   #include "Driver.hh"
   #include "../common/SourceLocation.hh"
+  #include "../common/Types.hh"
   #include "../ast/ASTNode.hh"
 
   inline SourceLocation toASTLoc(const yy::location& l) {

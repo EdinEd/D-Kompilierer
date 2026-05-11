@@ -6,7 +6,6 @@
 
 void traverseAST(UnitNode *rootNode)
 {
-    // Hier kannst du die ASTVisitor-Klasse verwenden, um den AST zu durchlaufen
     std::shared_ptr<ASTVisitor> visitorPtr = std::make_shared<ASTPrinter>();
     std::cout << "==== PRINTING AST ====" << std::endl;
     visitorPtr->visit(rootNode);
