@@ -34,7 +34,7 @@ add_executable(${PROJECT_NAME}
     ${CMAKE_CURRENT_SOURCE_DIR}/src/ast/ASTNode.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/ast/ASTPrinter.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/ast/ASTVisitor.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/ast/SourceLocation.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/common/SourceLocation.hh
         ${BISON_MyParser_OUTPUTS}
     ${FLEX_MyScanner_OUTPUTS}
 )
