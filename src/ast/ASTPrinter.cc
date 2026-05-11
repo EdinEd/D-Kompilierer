@@ -53,6 +53,25 @@ std::string getNodeTypeName(ASTNodeType &t)
     }
 }
 
+std::string getOpTypeName(OperationType &op)
+{
+    switch (op)
+    {
+    case OperationType::PLUS:
+        return "+";
+    case OperationType::MINUS:
+        return "-";
+    case OperationType::MULTIPLY:
+        return "*";
+    case OperationType::DIVIDE:
+        return "/";
+    case OperationType::ASSIGN:
+        return "=";
+    default:
+        return "unbekannte Operation";
+    }
+}
+
 void ASTPrinter::visit(UnitNode *rootNode)
 {
     for (const auto &func : rootNode->functions)
@@ -81,8 +100,7 @@ void ASTPrinter::visit(BlockNode *node)
     {
         stmt->accept(*this);
     }
-    indent_level--; 
-
+    indent_level--;
 }
 
 void ASTPrinter::visit(ReturnNode *node)
@@ -119,7 +137,7 @@ void ASTPrinter::visit(VarDeclNode *node)
 void ASTPrinter::visit(BinaryOpNode *node)
 {
     printIndent();
-    std::cout << "| OP [" << (int)node->op << "]" << std::endl;
+    std::cout << "| OP [" << getOpTypeName(node->op) << "]" << std::endl;
 
     indent_level++;
     if (node->left)

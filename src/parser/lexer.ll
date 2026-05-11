@@ -4,6 +4,7 @@
 # include <cstdlib>
 # include <cstring> // strerror
 # include <string>
+#include <iostream>
 # include "Driver.hh"
 # include "parser.hh"
 %}
@@ -15,6 +16,7 @@
   // A number symbol corresponding to the value in S.
   yy::parser::symbol_type
   make_NUMBER (const std::string &s, const yy::parser::location_type& loc);
+  yy::parser::symbol_type make_STRING(const std::string &s, const yy::parser::location_type& loc);
 %}
 
 id      [a-zA-ZÄÖÜ][a-zA-Z_0-9ÄÖÜ]*
@@ -55,7 +57,7 @@ blank   [ \t\r]
 
 
 {int}      return make_NUMBER (yytext, loc);
-{string}   return yy::parser::make_STRING (yytext, loc);
+{string}   return make_STRING (yytext, loc);
 {id}       return yy::parser::make_IDENTIFIER (yytext, loc);
 .          {
              throw yy::parser::syntax_error
@@ -72,6 +74,14 @@ make_NUMBER (const std::string &s, const yy::parser::location_type& loc)
   if (! (INT_MIN <= n && n <= INT_MAX && errno != ERANGE))
     throw yy::parser::syntax_error (loc, "integer is out of range: " + s);
   return yy::parser::make_NUMBER ((int) n, loc);
+}
+yy::parser::symbol_type 
+make_STRING(const std::string &s, const yy::parser::location_type& loc)
+{
+  if(s.length() > 2){
+    return yy::parser::make_STRING(s.substr(1, s.length() - 2), loc);
+  }
+  return yy::parser::make_STRING("", loc);
 }
 
 void Driver::scan_begin ()
