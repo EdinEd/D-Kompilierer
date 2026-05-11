@@ -25,6 +25,7 @@ void ASTSConstructor::visit(FunctionDefNode *node)
 void ASTSConstructor::visit(BlockNode *node)
 {
     auto newTable = std::make_shared<Symboltable>(symbolTableStack.top());
+    symbolTableStack.top()->addChild(newTable);
     symbolTableStack.push(newTable);
     for (const auto &stmt : node->statements)
     {
@@ -72,10 +73,17 @@ void ASTSConstructor::visit(VarRefNode *node)
 
 void ASTSConstructor::visit(StringNode *node)
 {
-
 }
 
 void ASTSConstructor::visit(NumberNode *node)
 {
+}
 
+std::shared_ptr<Symboltable> ASTSConstructor::getCurrentSymbolTable()
+{
+    if (symbolTableStack.empty())
+    {
+        return nullptr;
+    }
+    return symbolTableStack.top();
 }

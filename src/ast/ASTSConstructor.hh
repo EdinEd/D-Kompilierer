@@ -7,6 +7,8 @@
 class ASTSConstructor : public ASTVisitor {
 public:
     ASTSConstructor(): symbolTableStack(std::stack<std::shared_ptr<Symboltable>>()) {};
+    std::shared_ptr<Symboltable> getCurrentSymbolTable();
+    
     void visit(UnitNode* rootNode) override;
     void visit(FunctionDefNode* node)override;
     void visit(BlockNode* node) override;
