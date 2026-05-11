@@ -1,0 +1,12 @@
+services:
+  compiler:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: compiler
+    volumes:
+      - .:/app/source
+      - ./src/parser:/app/code
+    stdin_open: true
+    tty: true
+    working_dir: /app/code
