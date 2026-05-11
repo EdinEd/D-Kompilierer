@@ -7,6 +7,7 @@
 #include <unordered_map>
 #include <memory>
 #include <iostream>
+#include <vector>
 #include "../common/SourceLocation.hh"
 #include "../common/Types.hh"
 
