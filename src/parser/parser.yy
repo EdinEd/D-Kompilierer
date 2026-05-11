@@ -76,7 +76,6 @@
 
 %printer { yyo << $$; } <int> <std::string>;
 %printer { yyo << "[AST Node]"; } <std::unique_ptr<ASTNode>> <std::unique_ptr<BlockNode>> <std::unique_ptr<UnitNode>> <std::unique_ptr<FunctionDefNode>> <Type>; 
-%printer { yyo << "[Function List]"; } <std::vector<std::unique_ptr<FunctionDefNode>>>;
 
 %%
 %start unit;
