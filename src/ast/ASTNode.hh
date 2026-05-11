@@ -2,6 +2,8 @@
 #define ASTNODE_HH
 #include <iostream>
 #include <memory>
+#include <vector>
+#include <string>
 #include "SourceLocation.hh"
 #include "ASTVisitor.hh"
 
