@@ -4,4 +4,7 @@ funk assign_value_to_id(){
 
     faden y;
     y = "Hallo Welt";
+
+    x = y;
+    y = x;
 }

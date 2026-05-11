@@ -111,7 +111,8 @@ var_decl:
 
 var_assign:
   IDENTIFIER ASSIGN NUMBER SEMICOLON { $$ = std::make_unique<BinaryOpNode>(toASTLoc(@$), OperationType::ASSIGN, std::make_unique<VarRefNode>(toASTLoc(@1), $1), std::make_unique<NumberNode>(toASTLoc(@3), $3)); }
-  | IDENTIFIER ASSIGN STRING SEMICOLON { $$ = std::make_unique<BinaryOpNode>(toASTLoc(@$), OperationType::ASSIGN, std::make_unique<VarRefNode>(toASTLoc(@1), $1), std::make_unique<StringNode>(toASTLoc(@3), $3)); };
+  | IDENTIFIER ASSIGN STRING SEMICOLON { $$ = std::make_unique<BinaryOpNode>(toASTLoc(@$), OperationType::ASSIGN, std::make_unique<VarRefNode>(toASTLoc(@1), $1), std::make_unique<StringNode>(toASTLoc(@3), $3)); }
+  | IDENTIFIER ASSIGN IDENTIFIER SEMICOLON { $$ = std::make_unique<BinaryOpNode>(toASTLoc(@$), OperationType::ASSIGN, std::make_unique<VarRefNode>(toASTLoc(@1), $1), std::make_unique<VarRefNode>(toASTLoc(@3), $3)); }
 
 body:
   LBRACE contents RBRACE { $$ = std::move($2); };
