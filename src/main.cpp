@@ -2,11 +2,12 @@
 #include "Driver.hh"
 #include "ASTNode.hh"
 #include "ASTPrinter.hh"
+#include "ASTSConstructor.hh"
 #include <memory>
 
 void traverseAST(UnitNode *rootNode)
 {
-    std::shared_ptr<ASTVisitor> visitorPtr = std::make_shared<ASTPrinter>();
+    std::shared_ptr<ASTVisitor> visitorPtr = std::make_shared<ASTSConstructor>();
     std::cout << "==== PRINTING AST ====" << std::endl;
     visitorPtr->visit(rootNode);
 }
