@@ -15,7 +15,7 @@ public:
     Driver();
     std::unique_ptr<UnitNode> ast_root;
     std::vector<std::string> errors;
-    void error(const yy::location& loc, const std::string& msg);
+    void error(const yy::location &loc, const std::string &msg);
 
     int parse(const std::string &f);
     std::string file;

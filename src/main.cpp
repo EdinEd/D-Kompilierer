@@ -2,14 +2,36 @@
 #include "Driver.hh"
 #include "ASTNode.hh"
 #include "ASTPrinter.hh"
+#include "ASTSConstructor.hh"
+#include "symboltable/SymboltablePrinter.hh"
 #include <memory>
+
+void printAST(UnitNode *rootNode)
+{
+    std::cout << "==== PRINTING AST ====" << std::endl;
+    ASTPrinter printer;
+    printer.visit(rootNode);
+}
+
+std::shared_ptr<Symboltable> constructSymbolTable(UnitNode *rootNode)
+{
+    std::cout << "==== CONSTRUCTING SYMBOLTABLE ====" << std::endl;
+    ASTSConstructor visitor;
+    visitor.visit(rootNode);
+    return visitor.getCurrentSymbolTable();
+}
+
+void printSymbolTable(const std::shared_ptr<Symboltable> &symbolTable)
+{
+    std::cout << "==== PRINTING SYMBOLTABLE ====" << std::endl;
+    SymboltablePrinter::printSymboltable(symbolTable);
+}
 
 void traverseAST(UnitNode *rootNode)
 {
-    // Hier kannst du die ASTVisitor-Klasse verwenden, um den AST zu durchlaufen
-    std::shared_ptr<ASTVisitor> visitorPtr = std::make_shared<ASTPrinter>();
-    std::cout << "==== PRINTING AST ====" << std::endl;
-    visitorPtr->visit(rootNode);
+    printAST(rootNode);
+    auto symbolTable = constructSymbolTable(rootNode);
+    printSymbolTable(symbolTable);
 }
 
 int main(int argc, char *argv[])
