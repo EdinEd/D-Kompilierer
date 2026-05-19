@@ -19,4 +19,5 @@ FROM ubuntu:24.04
 RUN apt-get update && apt-get install -y libstdc++6 && rm -rf /var/lib/apt/lists/*
 WORKDIR /root/
 COPY --from=builder /app/build/compiler /usr/local/bin/compiler
+COPY /tests/ ./tests/
 ENTRYPOINT ["compiler"]
