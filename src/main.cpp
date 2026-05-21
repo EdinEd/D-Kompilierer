@@ -24,7 +24,7 @@ std::shared_ptr<Symboltable> constructSymbolTable(UnitNode *rootNode)
 void printSymbolTable(const std::shared_ptr<Symboltable> &symbolTable)
 {
     std::cout << "==== PRINTING SYMBOLTABLE ====" << std::endl;
-    SymboltablePrinter::printSymboltable(symbolTable);
+    SymboltablePrinter::printSymboltable(symbolTable.get());
 }
 
 void traverseAST(UnitNode *rootNode)
@@ -50,7 +50,7 @@ int main(int argc, char *argv[])
     if (drv.errors.empty())
     {
         std::cout << "Parsing successful!" << std::endl;
-        }
+    }
     else
     {
         std::cout << "Parsing completed with errors." << std::endl;
