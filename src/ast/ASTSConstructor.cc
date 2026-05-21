@@ -2,11 +2,13 @@
 
 void ASTSConstructor::visit(UnitNode *rootNode)
 {
-    symbolTableStack.push(std::make_shared<Symboltable>());
+    rootSymbolTable = std::make_shared<Symboltable>();
+    symbolTableStack.push(rootSymbolTable.get());
     for (const auto &func : rootNode->functions)
     {
         visit(func.get());
     }
+    symbolTableStack.pop();
 }
 
 void ASTSConstructor::visit(FunctionDefNode *node)
@@ -24,9 +26,10 @@ void ASTSConstructor::visit(FunctionDefNode *node)
 
 void ASTSConstructor::visit(BlockNode *node)
 {
-    auto newTable = std::make_shared<Symboltable>(symbolTableStack.top());
-    symbolTableStack.top()->addChild(newTable);
-    symbolTableStack.push(newTable);
+    auto newTable = std::make_unique<Symboltable>(symbolTableStack.top());
+    Symboltable *childPtr = newTable.get();
+    symbolTableStack.top()->addChild(std::move(newTable));
+    symbolTableStack.push(childPtr);
     for (const auto &stmt : node->statements)
     {
         stmt->accept(*this);
@@ -81,9 +84,5 @@ void ASTSConstructor::visit(NumberNode *node)
 
 std::shared_ptr<Symboltable> ASTSConstructor::getCurrentSymbolTable()
 {
-    if (symbolTableStack.empty())
-    {
-        return nullptr;
-    }
-    return symbolTableStack.top();
+    return rootSymbolTable;
 }

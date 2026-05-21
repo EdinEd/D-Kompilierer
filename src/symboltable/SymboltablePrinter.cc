@@ -25,7 +25,7 @@ void printIndent(int indent)
     }
 }
 
-void SymboltablePrinter::printSymboltable(const std::shared_ptr<Symboltable> &table, int indent)
+void SymboltablePrinter::printSymboltable(const Symboltable* table, int indent)
 {
     if (!table)
         return;
@@ -38,6 +38,6 @@ void SymboltablePrinter::printSymboltable(const std::shared_ptr<Symboltable> &ta
     {
         printIndent(indent);
         std::cout << "Subtable:" << std::endl;
-        SymboltablePrinter::printSymboltable(child, indent + 1);
+        SymboltablePrinter::printSymboltable(child.get(), indent + 1);
     }
 }

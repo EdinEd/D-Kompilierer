@@ -3,5 +3,5 @@
 
 class SymboltablePrinter {
 public:
-    static void printSymboltable(const std::shared_ptr<Symboltable>& table, int indent = 0);
+    static void printSymboltable(const Symboltable* table, int indent = 0);
 };

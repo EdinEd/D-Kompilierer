@@ -20,19 +20,19 @@ struct IdentifierInfo
 class Symboltable
 {
 public:
-    Symboltable(std::shared_ptr<Symboltable> parent = nullptr) : parent(parent) {}
-    IdentifierInfo *identify(std::string &identifierName);
-    bool insert(std::string &identifierName, IdentifierInfo info);
-    void addChild(std::shared_ptr<Symboltable> child);
-    
-    const std::unordered_map<std::string, IdentifierInfo>& getTable() const;
-    const std::vector<std::shared_ptr<Symboltable>>& getChilds() const;
-    std::shared_ptr<Symboltable> getParent();
+    Symboltable(Symboltable *parent = nullptr) : parent(parent) {}
+    IdentifierInfo *identify(const std::string &identifierName);
+    bool insert(const std::string &identifierName, IdentifierInfo info);
+    void addChild(std::unique_ptr<Symboltable> child);
+
+    const std::unordered_map<std::string, IdentifierInfo> &getTable() const;
+    const std::vector<std::unique_ptr<Symboltable>> &getChilds() const;
+    Symboltable *getParent();
 
 private:
     std::unordered_map<std::string, IdentifierInfo> table;
-    std::vector<std::shared_ptr<Symboltable>> childsVector;
-    std::shared_ptr<Symboltable> parent;
+    std::vector<std::unique_ptr<Symboltable>> childsVector;
+    Symboltable *parent;
 };
 
 #endif // SYMBOLTABLE_H
