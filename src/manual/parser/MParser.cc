@@ -70,6 +70,7 @@ void Parser::parse_functions(UnitNode *parent)
         auto function = parse_function();
         parent->addFunction(std::move(function));
         parse_functions(parent);
+        return;
     }
     throw std::runtime_error("Syntax error: File should begin with function or be empty");
 }
