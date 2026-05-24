@@ -110,15 +110,37 @@ void Parser::parse_function2(FunctionDefNode *parent)
 
 std::unique_ptr<BlockNode> Parser::parse_body()
 {
-    auto body = std::make_unique<BlockNode>(current_token.loc);
+    
     if (sets::first_body(current_token))
     {
+        auto body = std::make_unique<BlockNode>(current_token.loc);
         consume(TokenType::LBRACE, "Expected {");
-        // body->addStatement(parse_contents());
+        parse_contents(body.get());
         consume(TokenType::RBRACE, "Expected }");
         return body;
     }
     throw std::runtime_error("Expected Body definition");
+}
+
+void Parser::parse_contents(BlockNode *parent)
+{
+    if (sets::follow_contents(current_token))
+    {
+        return;
+    }
+    else if (sets::first_content_item(current_token))
+    {
+        parent->addStatement(std::move(parse_content_item()));
+        parse_contents(parent);
+        return;
+    }
+    throw std::runtime_error("Expected empty or content_item");
+}
+
+std::unique_ptr<ASTNode> Parser::parse_content_item()
+{
+    auto test = std::make_unique<NumberNode>(current_token.loc, 1);
+    return test;
 }
 
 Type Parser::parse_type()

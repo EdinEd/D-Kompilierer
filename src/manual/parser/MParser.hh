@@ -29,7 +29,7 @@ private:
     std::unique_ptr<ASTNode> parse_var_decl_string();
     std::unique_ptr<ASTNode> parse_var_assign();
     std::unique_ptr<ASTNode> parse_var_assign2();
-    std::unique_ptr<ASTNode> parse_contents();
+    void parse_contents(BlockNode* parent);
     std::unique_ptr<ASTNode> parse_content_item();
     std::unique_ptr<ASTNode> parse_identifier_call();
     std::unique_ptr<ASTNode> parse_identifiert_call2();

@@ -21,7 +21,7 @@ public:
 class NumberNode : public ASTNode
 {
 public:
-    NumberNode(SourceLocation loc, int &value) : ASTNode(loc, ASTNodeType::NUMBER), value(value) {}
+    NumberNode(SourceLocation loc, int value) : ASTNode(loc, ASTNodeType::NUMBER), value(value) {}
     int value;
     void accept(ASTVisitor &visitor) override;
 };
