@@ -18,7 +18,7 @@ run_test_suite() {
     for input_file in $FOLDER/*.d; do
         [ -e "$input_file" ] || continue 
         
-        $COMPILER $input_file > /dev/null 2>&1
+        $COMPILER -m $input_file > /dev/null 2>&1
         
         # Speichere den Rückgabewert
         ACTUAL_CODE=$?
@@ -33,18 +33,18 @@ run_test_suite() {
     done
     echo ""
 }
-
-
-echo "Compiling Parser..."
+COMPILER="../build/compiler"
+...
+echo "Building Compiler in project root..."
+cd ..
 mkdir -p build
 cd build
-cmake ../..
+cmake -DBISON_EXECUTABLE=/usr/local/bin/bison ..
 make
-cd ..
-
+cd ../tests
 
 echo ""
-echo "=== Starting Tests ==="
+echo "=== Starting Tests (MANUAL MODE) ==="
 run_test_suite "correct" 0
 run_test_suite "incorrect" 1
 
@@ -58,4 +58,5 @@ else
 fi
 
 echo "Cleaning up..."
-rm -rf build
+# Nicht den build-Ordner löschen, wenn er für weitere Tests gebraucht wird.
+# rm -rf ../build

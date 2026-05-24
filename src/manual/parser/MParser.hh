@@ -1,6 +1,6 @@
 #pragma once
 #include <string>
-#include "../lexer/lexer.hh"
+#include "../lexer/MLexer.hh"
 #include "../../ast/ASTNode.hh"
 
 class Parser

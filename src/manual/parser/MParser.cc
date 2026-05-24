@@ -1,6 +1,7 @@
 #include "MParser.hh"
 #include "Sets.hh"
 #include <sstream>
+#include <fstream>
 
 Parser::Parser()
     : lexer(Lexer("")), ast_root(nullptr), current_token(Token(TokenType::END_OF_FILE, "", SourceLocation()))
@@ -9,7 +10,15 @@ Parser::Parser()
 
 bool Parser::parse(const std::string &filename)
 {
-    lexer = Lexer(filename);
+    std::ifstream file(filename);
+    if (!file.is_open())
+    {
+        std::cerr << "Could not open file: " << filename << std::endl;
+        return false;
+    }
+    std::stringstream buffer;
+    buffer << file.rdbuf();
+    lexer = Lexer(buffer.str());
     this->advance();
     ast_root = std::move(parse_root());
     return true;
