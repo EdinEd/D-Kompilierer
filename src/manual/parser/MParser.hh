@@ -7,11 +7,12 @@ class Parser
 {
 public:
     Parser();
-    void parse(const std::string &filename);
+    bool parse(const std::string &filename);
     bool match(const TokenType &expected);
     Token consume(const TokenType &expected, const std::string error_msg);
     void advance();
     TokenType peek();
+    UnitNode *getAstRoot() const;
 
 private:
     Lexer lexer;

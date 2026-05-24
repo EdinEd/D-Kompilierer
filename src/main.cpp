@@ -40,40 +40,42 @@ int main(int argc, char *argv[])
     int res = 0;
     Driver drv;
     Parser parser = Parser();
+    bool parsing_success = false;
+    bool manual_mode = false;
     for (int i = 1; i < argc; ++i)
     {
         if (argv[i] == std::string("-m"))
         {
-            parser.parse("");
+            manual_mode = true;
         }
         else if (argv[i] == std::string("-p"))
             drv.trace_parsing = true;
         else if (argv[i] == std::string("-s"))
             drv.trace_scanning = true;
-        else if (!drv.parse(argv[i]))
-            std::cout << "Fertig" << '\n';
         else
-            res = 1;
+        {
+            if (manual_mode)
+            {
+                parsing_success = parser.parse(argv[i]);
+            }
+            parsing_success = drv.parse(argv[i]);
+        }
     }
 
-    if (drv.errors.empty())
+    if (parsing_success)
     {
         std::cout << "Parsing successful!" << std::endl;
+        std::cout << "AST generated successfully!" << std::endl;
+        if (manual_mode)
+            traverseAST(parser.getAstRoot());
+        else
+            traverseAST(drv.ast_root.get());
     }
     else
     {
         std::cout << "Parsing completed with errors." << std::endl;
         std::cout << "Parsing failed with " << drv.errors.size() << " error(s)." << std::endl;
         return 1;
-    }
-    if (drv.ast_root.get() != nullptr)
-    {
-        std::cout << "AST generated successfully!" << std::endl;
-        traverseAST(drv.ast_root.get());
-    }
-    else
-    {
-        std::cout << "Failed to generate AST." << std::endl;
     }
     return 0;
 }

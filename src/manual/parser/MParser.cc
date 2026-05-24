@@ -7,11 +7,12 @@ Parser::Parser()
 {
 }
 
-void Parser::parse(const std::string &filename)
+bool Parser::parse(const std::string &filename)
 {
     lexer = Lexer(filename);
     this->advance();
     ast_root = std::move(parse_root());
+    return true;
 }
 
 TokenType Parser::peek()
@@ -57,6 +58,11 @@ std::unique_ptr<UnitNode> Parser::parse_root()
         return root;
     }
     throw std::runtime_error("Syntax error: File should begin with function or be empty");
+}
+
+UnitNode *Parser::getAstRoot() const
+{
+    return ast_root.get();
 }
 
 void Parser::parse_functions(UnitNode *parent)
