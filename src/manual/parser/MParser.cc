@@ -110,7 +110,7 @@ void Parser::parse_function2(FunctionDefNode *parent)
 
 std::unique_ptr<BlockNode> Parser::parse_body()
 {
-    
+
     if (sets::first_body(current_token))
     {
         auto body = std::make_unique<BlockNode>(current_token.loc);
@@ -139,8 +139,51 @@ void Parser::parse_contents(BlockNode *parent)
 
 std::unique_ptr<ASTNode> Parser::parse_content_item()
 {
-    auto test = std::make_unique<NumberNode>(current_token.loc, 1);
-    return test;
+    if (sets::first_return_statement(current_token))
+    {
+        return parse_return_statement();
+    }
+    else if (sets::first_var_decl(current_token))
+    {
+        return parse_var_decl();
+    }
+    else if (sets::first_body(current_token))
+    {
+        return parse_body();
+    }
+    else if (sets::first_identifier_call(current_token))
+    {
+        return parse_identifier_call();
+    }
+    throw std::runtime_error("Unexpected content");
+}
+
+std::unique_ptr<ReturnNode> Parser::parse_return_statement(){
+    if(sets::first_return_statement(current_token)){
+        consume(TokenType::RETURN, "Expected return");
+        return parse_return_statement2();
+    }
+    throw std::runtime_error("Unexpected return");
+}
+
+std::unique_ptr<ReturnNode> Parser::parse_return_statement2(){
+    auto return_node = std::make_unique<ReturnNode>(current_token.loc);
+    if(peek() == TokenType::NUMBER){
+        auto number_token = consume(TokenType::NUMBER, "Expected return");
+        return_node->expression = std::make_unique<NumberNode>(number_token.loc, std::stoi(number_token.lexeme));
+        return return_node;
+    }
+    else if(peek() == TokenType::STRING){
+        auto string_token = consume(TokenType::STRING, "Expected string");
+        return_node->expression = std::make_unique<StringNode>(string_token.loc, string_token.lexeme);
+        return return_node;
+    }
+    else if(peek() == TokenType::IDENTIFIER){
+        auto identifier_token = consume(TokenType::IDENTIFIER, "Expected identifier");
+        return_node->expression = std::make_unique<VarRefNode>(identifier_token.loc, identifier_token.lexeme);
+        return return_node;
+    }
+    throw std::runtime_error("Unexpected return");
 }
 
 Type Parser::parse_type()

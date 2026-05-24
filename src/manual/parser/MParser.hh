@@ -33,7 +33,7 @@ private:
     std::unique_ptr<ASTNode> parse_content_item();
     std::unique_ptr<ASTNode> parse_identifier_call();
     std::unique_ptr<ASTNode> parse_identifiert_call2();
-    std::unique_ptr<ASTNode> parse_return_statement();
-    std::unique_ptr<ASTNode> parse_return_statement2();
+    std::unique_ptr<ReturnNode> parse_return_statement();
+    std::unique_ptr<ReturnNode> parse_return_statement2();
     std::unique_ptr<ASTNode> parse_function_call();
 };

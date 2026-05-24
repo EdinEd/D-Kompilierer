@@ -23,7 +23,7 @@ namespace sets
         return token.type == TokenType::FUNK;
     }
 
-    inline bool first_function_prime(const Token &token)
+    inline bool first_function_2(const Token &token)
     {
         switch (token.type)
         {
@@ -89,7 +89,7 @@ namespace sets
         return token.type == TokenType::ASSIGN;
     }
 
-    inline bool first_var_assign_prime(const Token &token)
+    inline bool first_var_assign_2(const Token &token)
     {
         switch (token.type)
         {
@@ -142,7 +142,7 @@ namespace sets
         return token.type == TokenType::IDENTIFIER;
     }
 
-    inline bool first_identifier_call_prime(const Token &token)
+    inline bool first_identifier_call_2(const Token &token)
     {
         switch (token.type)
         {
@@ -159,7 +159,7 @@ namespace sets
         return token.type == TokenType::RETURN;
     }
 
-    inline bool first_return_statement_prime(const Token &token)
+    inline bool first_return_statement_2(const Token &token)
     {
         switch (token.type)
         {
@@ -198,7 +198,7 @@ namespace sets
         }
     }
 
-    inline bool follow_function_prime(const Token &token)
+    inline bool follow_function_2(const Token &token)
     {
         switch (token.type)
         {
@@ -253,7 +253,7 @@ namespace sets
         return is_statement_follow(token);
     }
 
-    inline bool follow_var_assign_prime(const Token &token)
+    inline bool follow_var_assign_2(const Token &token)
     {
         return is_statement_follow(token);
     }
@@ -291,7 +291,7 @@ namespace sets
         return is_statement_follow(token);
     }
 
-    inline bool follow_identifier_call_prime(const Token &token)
+    inline bool follow_identifier_call_2(const Token &token)
     {
         return is_statement_follow(token);
     }
@@ -301,7 +301,7 @@ namespace sets
         return is_statement_follow(token);
     }
 
-    inline bool follow_return_statement_prime(const Token &token)
+    inline bool follow_return_statement_2(const Token &token)
     {
         return is_statement_follow(token);
     }

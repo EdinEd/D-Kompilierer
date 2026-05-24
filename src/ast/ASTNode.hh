@@ -71,6 +71,7 @@ public:
     std::unique_ptr<ASTNode> expression;
 
     ReturnNode(SourceLocation loc, std::unique_ptr<ASTNode> expr) : ASTNode(loc, ASTNodeType::RETURN), expression(std::move(expr)) {}
+    ReturnNode(SourceLocation loc) : ASTNode(loc, ASTNodeType::RETURN) {}
     void accept(ASTVisitor &visitor) override;
 };
 
