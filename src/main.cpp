@@ -4,6 +4,7 @@
 #include "ASTPrinter.hh"
 #include "ASTSConstructor.hh"
 #include "symboltable/SymboltablePrinter.hh"
+#include "manual/parser/MParser.hh"
 #include <memory>
 
 void printAST(UnitNode *rootNode)
@@ -38,8 +39,14 @@ int main(int argc, char *argv[])
 {
     int res = 0;
     Driver drv;
+    Parser parser = Parser();
     for (int i = 1; i < argc; ++i)
-        if (argv[i] == std::string("-p"))
+    {
+        if (argv[i] == std::string("-m"))
+        {
+            parser.parse("");
+        }
+        else if (argv[i] == std::string("-p"))
             drv.trace_parsing = true;
         else if (argv[i] == std::string("-s"))
             drv.trace_scanning = true;
@@ -47,6 +54,8 @@ int main(int argc, char *argv[])
             std::cout << "Fertig" << '\n';
         else
             res = 1;
+    }
+
     if (drv.errors.empty())
     {
         std::cout << "Parsing successful!" << std::endl;

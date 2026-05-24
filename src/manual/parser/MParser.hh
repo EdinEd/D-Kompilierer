@@ -11,6 +11,7 @@ public:
     bool match(const TokenType &expected);
     Token consume(const TokenType &expected, const std::string error_msg);
     void advance();
+    TokenType peek();
 
 private:
     Lexer lexer;
@@ -18,11 +19,11 @@ private:
     Token current_token;
 
     std::unique_ptr<UnitNode> parse_root();
-    std::unique_ptr<UnitNode> parse_functions();
+    void parse_functions(UnitNode *parent);
     std::unique_ptr<FunctionDefNode> parse_function();
-    std::unique_ptr<FunctionDefNode> parse_function2();
-    std::unique_ptr<ASTNode> parse_body();
-    std::unique_ptr<ASTNode> parse_type();
+    void parse_function2(FunctionDefNode *parent);
+    std::unique_ptr<BlockNode> parse_body();
+    Type parse_type();
     std::unique_ptr<ASTNode> parse_var_decl();
     std::unique_ptr<ASTNode> parse_var_decl_int();
     std::unique_ptr<ASTNode> parse_var_decl_string();

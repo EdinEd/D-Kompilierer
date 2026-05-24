@@ -95,6 +95,7 @@ public:
     std::unique_ptr<BlockNode> body;
     FunctionDefNode(SourceLocation loc, Type ret_type, const std::string &name, std::unique_ptr<BlockNode> body = nullptr)
         : ASTNode(loc, ASTNodeType::FUNCTION_DEF), return_type(ret_type), name(name), body(std::move(body)) {}
+    FunctionDefNode(SourceLocation loc) : ASTNode(loc, ASTNodeType::FUNCTION_DEF) {};
     void accept(ASTVisitor &visitor) override;
 };
 
