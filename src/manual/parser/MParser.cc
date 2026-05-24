@@ -80,7 +80,8 @@ std::unique_ptr<FunctionDefNode> Parser::parse_function()
     if (sets::first_function(current_token))
     {
         consume(TokenType::FUNK, "Expected Keyword: FUNK");
-        consume(TokenType::IDENTIFIER, "Expected an identifier");
+        auto identifier_token = consume(TokenType::IDENTIFIER, "Expected an identifier");
+        function->name = identifier_token.lexeme;
         consume(TokenType::LPAREN, "Expected an LPAREN");
         consume(TokenType::RPAREN, "Expected RPAREN");
         parse_function2(function.get());
@@ -94,14 +95,30 @@ void Parser::parse_function2(FunctionDefNode *parent)
     {
         consume(TokenType::ARROW, "Expected Keyword: ARROW (->)");
         parent->return_type = parse_type();
-        // parse_body();
+        parent->body = parse_body();
+        return;
     }
     else if (sets::first_body(current_token))
     {
-        // parse_body();
+        parent->return_type = Type::VOID;
+        parent->body = parse_body();
+        return;
     }
 
     throw std::runtime_error("Expected -> or Body definition");
+}
+
+std::unique_ptr<BlockNode> Parser::parse_body()
+{
+    auto body = std::make_unique<BlockNode>(current_token.loc);
+    if (sets::first_body(current_token))
+    {
+        consume(TokenType::LBRACE, "Expected {");
+        // body->addStatement(parse_contents());
+        consume(TokenType::RBRACE, "Expected }");
+        return body;
+    }
+    throw std::runtime_error("Expected Body definition");
 }
 
 Type Parser::parse_type()
