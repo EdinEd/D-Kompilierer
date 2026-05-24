@@ -62,6 +62,9 @@ public:
 
     VarDeclNode(SourceLocation loc, Type t, const std::string &n, std::unique_ptr<ASTNode> init)
         : ASTNode(loc, ASTNodeType::VAR_DECL), type(t), name(n), init_value(std::move(init)) {}
+
+    VarDeclNode(SourceLocation loc)
+        : ASTNode(loc, ASTNodeType::VAR_DECL){}
     void accept(ASTVisitor &visitor) override;
 };
 

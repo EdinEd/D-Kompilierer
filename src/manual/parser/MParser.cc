@@ -52,7 +52,7 @@ std::unique_ptr<UnitNode> Parser::parse_root()
     if (sets::first_functions(current_token) || current_token.type == TokenType::END_OF_FILE)
     {
         auto root = std::make_unique<UnitNode>(current_token.loc);
-        parse_functions(ast_root.get());
+        parse_functions(root.get());
         consume(TokenType::END_OF_FILE, "Expected end of file");
         return root;
     }
@@ -158,32 +158,177 @@ std::unique_ptr<ASTNode> Parser::parse_content_item()
     throw std::runtime_error("Unexpected content");
 }
 
-std::unique_ptr<ReturnNode> Parser::parse_return_statement(){
-    if(sets::first_return_statement(current_token)){
+std::unique_ptr<ReturnNode> Parser::parse_return_statement()
+{
+    if (sets::first_return_statement(current_token))
+    {
         consume(TokenType::RETURN, "Expected return");
         return parse_return_statement2();
     }
     throw std::runtime_error("Unexpected return");
 }
 
-std::unique_ptr<ReturnNode> Parser::parse_return_statement2(){
+std::unique_ptr<ReturnNode> Parser::parse_return_statement2()
+{
     auto return_node = std::make_unique<ReturnNode>(current_token.loc);
-    if(peek() == TokenType::NUMBER){
+    if (peek() == TokenType::NUMBER)
+    {
         auto number_token = consume(TokenType::NUMBER, "Expected return");
+        consume(TokenType::SEMICOLON, "Expected semicolon");
         return_node->expression = std::make_unique<NumberNode>(number_token.loc, std::stoi(number_token.lexeme));
         return return_node;
     }
-    else if(peek() == TokenType::STRING){
+    else if (peek() == TokenType::STRING)
+    {
         auto string_token = consume(TokenType::STRING, "Expected string");
+        consume(TokenType::SEMICOLON, "Expected semicolon");
         return_node->expression = std::make_unique<StringNode>(string_token.loc, string_token.lexeme);
         return return_node;
     }
-    else if(peek() == TokenType::IDENTIFIER){
+    else if (peek() == TokenType::IDENTIFIER)
+    {
         auto identifier_token = consume(TokenType::IDENTIFIER, "Expected identifier");
+        consume(TokenType::SEMICOLON, "Expected semicolon");
         return_node->expression = std::make_unique<VarRefNode>(identifier_token.loc, identifier_token.lexeme);
         return return_node;
     }
     throw std::runtime_error("Unexpected return");
+}
+
+std::unique_ptr<VarDeclNode> Parser::parse_var_decl()
+{
+    auto var_decl_node = std::make_unique<VarDeclNode>(current_token.loc);
+    if (peek() == TokenType::TYPE_INT)
+    {
+        consume(TokenType::TYPE_INT, "");
+        var_decl_node->type = Type::INTEGER;
+        auto identifier_token = consume(TokenType::IDENTIFIER, "Expected identifier");
+        var_decl_node->name = identifier_token.lexeme;
+        parse_var_decl_int(var_decl_node.get());
+        return var_decl_node;
+    }
+    else if (peek() == TokenType::TYPE_STRING)
+    {
+        consume(TokenType::TYPE_STRING, "");
+        var_decl_node->type = Type::STRING;
+        auto identifier_token = consume(TokenType::IDENTIFIER, "Expected identifier");
+        var_decl_node->name = identifier_token.lexeme;
+        parse_var_decl_string(var_decl_node.get());
+        return var_decl_node;
+    }
+    throw std::runtime_error("Expected variable declaration");
+}
+
+void Parser::parse_var_decl_int(VarDeclNode *parent)
+{
+    if (peek() == TokenType::SEMICOLON)
+    {
+        consume(TokenType::SEMICOLON, "Expected ;");
+        return;
+    }
+    if (peek() == TokenType::ASSIGN)
+    {
+        consume(TokenType::ASSIGN, "Expected =");
+        auto number_token = consume(TokenType::NUMBER, "Expected number");
+        parent->init_value = std::make_unique<NumberNode>(number_token.loc, std::stoi(number_token.lexeme));
+        consume(TokenType::SEMICOLON, "Expected ;");
+        return;
+    }
+    throw std::runtime_error("Expected ; or assignment in int declaration");
+}
+
+void Parser::parse_var_decl_string(VarDeclNode *parent)
+{
+    if (peek() == TokenType::SEMICOLON)
+    {
+        consume(TokenType::SEMICOLON, "Expected ;");
+        return;
+    }
+    if (peek() == TokenType::ASSIGN)
+    {
+        consume(TokenType::ASSIGN, "Expected =");
+        auto string_token = consume(TokenType::STRING, "Expected string");
+        parent->init_value = std::make_unique<StringNode>(string_token.loc, string_token.lexeme);
+        consume(TokenType::SEMICOLON, "Expected ;");
+        return;
+    }
+    throw std::runtime_error("Expected ; or assignment in string declaration");
+}
+
+std::unique_ptr<ASTNode> Parser::parse_identifier_call()
+{
+    if (sets::first_identifier_call(current_token))
+    {
+        auto identifier_token = consume(TokenType::IDENTIFIER, "Expected identifier");
+
+        return parse_identifier_call2(identifier_token);
+    }
+    throw std::runtime_error("Expected identifier");
+}
+
+std::unique_ptr<ASTNode> Parser::parse_identifier_call2(const Token &identifier_token)
+{
+    if (sets::first_function_call(current_token))
+    {
+        return parse_function_call(identifier_token);
+    }
+    else if (sets::first_var_assign(current_token))
+    {
+        return parse_var_assign(identifier_token);
+    }
+
+    throw std::runtime_error("Expected '(' for function call or '=' for variable assignment");
+}
+
+std::unique_ptr<ASTNode> Parser::parse_function_call(const Token &identifier_token)
+{
+    if (sets::first_function_call(current_token))
+    {
+        consume(TokenType::LPAREN, "Expected '('");
+        consume(TokenType::RPAREN, "Expected ')'");
+        consume(TokenType::SEMICOLON, "Expected ';'");
+        // TODO: Anstatt VarRefNode -> FuncRefNode
+        return std::make_unique<VarRefNode>(identifier_token.loc, identifier_token.lexeme);
+    }
+    throw std::runtime_error("Expected function call");
+}
+
+std::unique_ptr<BinaryOpNode> Parser::parse_var_assign(const Token &identifier_token)
+{
+
+    if (sets::first_var_assign(current_token))
+    {
+        auto assign_token = consume(TokenType::ASSIGN, "Expected =");
+        auto assign_right_node = parse_var_assign2();
+
+        auto assign_left_node = std::make_unique<VarRefNode>(identifier_token.loc, identifier_token.lexeme);
+        auto assign_node = std::make_unique<BinaryOpNode>(assign_token.loc, OperationType::ASSIGN, std::move(assign_left_node), std::move(assign_right_node));
+        return assign_node;
+    }
+    throw std::runtime_error("Expected '=' for variable assignment");
+}
+
+std::unique_ptr<ASTNode> Parser::parse_var_assign2()
+{
+    if (peek() == TokenType::NUMBER)
+    {
+        auto number_token = consume(TokenType::NUMBER, "Expected number");
+        consume(TokenType::SEMICOLON, "Expected ';'");
+        return std::make_unique<NumberNode>(number_token.loc, std::stoi(number_token.lexeme));
+    }
+    if (peek() == TokenType::STRING)
+    {
+        auto string_token = consume(TokenType::STRING, "Expected string");
+        consume(TokenType::SEMICOLON, "Expected ';'");
+        return std::make_unique<StringNode>(string_token.loc, string_token.lexeme);
+    }
+    if (peek() == TokenType::IDENTIFIER)
+    {
+        auto identifier_token = consume(TokenType::IDENTIFIER, "Expected identifier");
+        consume(TokenType::SEMICOLON, "Expected ';'");
+        return std::make_unique<VarRefNode>(identifier_token.loc, identifier_token.lexeme);
+    }
+    throw std::runtime_error("Expected initializer expression");
 }
 
 Type Parser::parse_type()
