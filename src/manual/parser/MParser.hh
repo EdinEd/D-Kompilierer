@@ -6,29 +6,33 @@
 class Parser
 {
 public:
-    Parser() = default;
+    Parser();
     void parse(const std::string &filename);
+    bool match(const TokenType &expected);
+    Token consume(const TokenType &expected, const std::string error_msg);
+    void advance();
 
 private:
     Lexer lexer;
-    ASTNode *ast_root;
+    std::unique_ptr<UnitNode> ast_root;
+    Token current_token;
 
-    ASTNode *root();
-    ASTNode *functions();
-    ASTNode *function();
-    ASTNode *function2();
-    ASTNode *body();
-    ASTNode *type();
-    ASTNode *var_decl();
-    ASTNode *var_decl_int();
-    ASTNode *var_decl_string();
-    ASTNode *var_assign();
-    ASTNode *var_assign2();
-    ASTNode *contents();
-    ASTNode *content_item();
-    ASTNode *identifier_call();
-    ASTNode *identifiert_call2();
-    ASTNode *return_statement();
-    ASTNode *return_statement2();
-    ASTNode *function_call();
+    std::unique_ptr<UnitNode> parse_root();
+    std::unique_ptr<UnitNode> parse_functions();
+    std::unique_ptr<FunctionDefNode> parse_function();
+    std::unique_ptr<FunctionDefNode> parse_function2();
+    std::unique_ptr<ASTNode> parse_body();
+    std::unique_ptr<ASTNode> parse_type();
+    std::unique_ptr<ASTNode> parse_var_decl();
+    std::unique_ptr<ASTNode> parse_var_decl_int();
+    std::unique_ptr<ASTNode> parse_var_decl_string();
+    std::unique_ptr<ASTNode> parse_var_assign();
+    std::unique_ptr<ASTNode> parse_var_assign2();
+    std::unique_ptr<ASTNode> parse_contents();
+    std::unique_ptr<ASTNode> parse_content_item();
+    std::unique_ptr<ASTNode> parse_identifier_call();
+    std::unique_ptr<ASTNode> parse_identifiert_call2();
+    std::unique_ptr<ASTNode> parse_return_statement();
+    std::unique_ptr<ASTNode> parse_return_statement2();
+    std::unique_ptr<ASTNode> parse_function_call();
 };
