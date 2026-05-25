@@ -19,7 +19,7 @@
   yy::parser::symbol_type make_STRING(const std::string &s, const yy::parser::location_type& loc);
 %}
 
-id      [a-zA-ZÄÖÜ][a-zA-Z_0-9ÄÖÜ]*
+id      [a-zA-ZÄÖÜäöü][a-zA-Z_0-9ÄÖÜäöü]*
 string  \"(\\.|[^\\"])*\"
 int     [0-9]+
 blank   [ \t\r]

@@ -4,6 +4,7 @@
 #include "ASTPrinter.hh"
 #include "ASTSConstructor.hh"
 #include "symboltable/SymboltablePrinter.hh"
+#include "manual/parser/MParser.hh"
 #include <memory>
 
 void printAST(UnitNode *rootNode)
@@ -36,35 +37,57 @@ void traverseAST(UnitNode *rootNode)
 
 int main(int argc, char *argv[])
 {
-    int res = 0;
-    Driver drv;
-    for (int i = 1; i < argc; ++i)
-        if (argv[i] == std::string("-p"))
-            drv.trace_parsing = true;
-        else if (argv[i] == std::string("-s"))
-            drv.trace_scanning = true;
-        else if (!drv.parse(argv[i]))
-            std::cout << "Fertig" << '\n';
+    try {
+        int res = 0;
+        Driver drv;
+        Parser parser = Parser();
+        bool parsing_success = false;
+        bool manual_mode = false;
+        for (int i = 1; i < argc; ++i)
+        {
+            if (argv[i] == std::string("-m"))
+            {
+                manual_mode = true;
+            }
+            else if (argv[i] == std::string("-p"))
+                drv.trace_parsing = true;
+            else if (argv[i] == std::string("-s"))
+                drv.trace_scanning = true;
+            else
+            {
+                if (manual_mode)
+                {
+                    parsing_success = parser.parse(argv[i]);
+                }
+                else
+                {
+                    parsing_success = drv.parse(argv[i]);
+                }
+            }
+        }
+
+        if (parsing_success)
+        {
+            std::cout << "Parsing successful!" << std::endl;
+            std::cout << "AST generated successfully!" << std::endl;
+            if (manual_mode)
+                traverseAST(parser.getAstRoot());
+            else
+                traverseAST(drv.ast_root.get());
+        }
         else
-            res = 1;
-    if (drv.errors.empty())
-    {
-        std::cout << "Parsing successful!" << std::endl;
-    }
-    else
-    {
-        std::cout << "Parsing completed with errors." << std::endl;
-        std::cout << "Parsing failed with " << drv.errors.size() << " error(s)." << std::endl;
+        {
+            std::cout << "Parsing completed with errors." << std::endl;
+            if (!manual_mode)
+                std::cout << "Parsing failed with " << drv.errors.size() << " error(s)." << std::endl;
+            return 1;
+        }
+    } catch (const std::exception& e) {
+        std::cerr << "Error: " << e.what() << std::endl;
         return 1;
-    }
-    if (drv.ast_root.get() != nullptr)
-    {
-        std::cout << "AST generated successfully!" << std::endl;
-        traverseAST(drv.ast_root.get());
-    }
-    else
-    {
-        std::cout << "Failed to generate AST." << std::endl;
+    } catch (...) {
+        std::cerr << "Unknown error occurred." << std::endl;
+        return 1;
     }
     return 0;
 }

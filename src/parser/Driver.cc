@@ -3,7 +3,6 @@
 
 Driver::Driver() : trace_parsing(false), trace_scanning(false)
 {
-
 }
 
 int Driver::parse(const std::string &f)
@@ -15,7 +14,7 @@ int Driver::parse(const std::string &f)
   parse.set_debug_level(trace_parsing);
   int res = parse();
   scan_end();
-  return res;
+  return errors.empty();
 }
 
 void Driver::error(const yy::location &l, const std::string &m)

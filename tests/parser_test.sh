@@ -1,5 +1,10 @@
 #!/bin/bash
 
+MANUAL_FLAG=""
+if [ "$1" = "-m" ]; then
+    MANUAL_FLAG="-m"
+fi
+
 COMPILER="build/compiler"
 GREEN='\033[0;32m'
 RED='\033[0;31m'
@@ -18,9 +23,9 @@ run_test_suite() {
     for input_file in $FOLDER/*.d; do
         [ -e "$input_file" ] || continue 
         
-        $COMPILER $input_file > /dev/null 2>&1
+        $COMPILER $MANUAL_FLAG $input_file > /dev/null 2>&1
         
-        # Speichere den Rückgabewert
+        
         ACTUAL_CODE=$?
         
         if [ $ACTUAL_CODE -eq $EXPECTED_CODE ]; then
@@ -33,18 +38,40 @@ run_test_suite() {
     done
     echo ""
 }
-
-
-echo "Compiling Parser..."
+COMPILER="../build/compiler"
+...
+echo "Building Compiler in project root..."
+cd ..
 mkdir -p build
 cd build
-cmake ../..
-make
-cd ..
 
+
+CMAKE_ARGS=""
+
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    if command -v brew &> /dev/null; then
+        BREW_BISON="$(brew --prefix bison)/bin/bison"
+        if [ -x "$BREW_BISON" ]; then
+            CMAKE_ARGS="-DBISON_EXECUTABLE=$BREW_BISON"
+            echo "macOS recognized: Homebrew Bison ($BREW_BISON)"
+        fi
+    fi
+elif [[ "$OSTYPE" == "linux-gnu"* ]] || [[ "$OSTYPE" == "msys" ]] || [[ "$OSTYPE" == "cygwin" ]]; then
+    if [ -x "/usr/local/bin/bison" ]; then
+        CMAKE_ARGS="-DBISON_EXECUTABLE=/usr/local/bin/bison"
+        echo "Linux/Windows recognized: Bison (/usr/local/bin/bison)"
+    fi
+fi
+
+echo "Running: cmake $CMAKE_ARGS .."
+cmake $CMAKE_ARGS ..
+
+
+make
+cd ../tests
 
 echo ""
-echo "=== Starting Tests ==="
+echo "=== Starting Tests (MANUAL MODE) ==="
 run_test_suite "correct" 0
 run_test_suite "incorrect" 1
 
@@ -57,5 +84,4 @@ else
     exit 0
 fi
 
-echo "Cleaning up..."
-rm -rf build
+

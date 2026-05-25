@@ -21,7 +21,7 @@ public:
 class NumberNode : public ASTNode
 {
 public:
-    NumberNode(SourceLocation loc, int &value) : ASTNode(loc, ASTNodeType::NUMBER), value(value) {}
+    NumberNode(SourceLocation loc, int value) : ASTNode(loc, ASTNodeType::NUMBER), value(value) {}
     int value;
     void accept(ASTVisitor &visitor) override;
 };
@@ -62,6 +62,9 @@ public:
 
     VarDeclNode(SourceLocation loc, Type t, const std::string &n, std::unique_ptr<ASTNode> init)
         : ASTNode(loc, ASTNodeType::VAR_DECL), type(t), name(n), init_value(std::move(init)) {}
+
+    VarDeclNode(SourceLocation loc)
+        : ASTNode(loc, ASTNodeType::VAR_DECL){}
     void accept(ASTVisitor &visitor) override;
 };
 
@@ -71,6 +74,7 @@ public:
     std::unique_ptr<ASTNode> expression;
 
     ReturnNode(SourceLocation loc, std::unique_ptr<ASTNode> expr) : ASTNode(loc, ASTNodeType::RETURN), expression(std::move(expr)) {}
+    ReturnNode(SourceLocation loc) : ASTNode(loc, ASTNodeType::RETURN) {}
     void accept(ASTVisitor &visitor) override;
 };
 
@@ -95,6 +99,7 @@ public:
     std::unique_ptr<BlockNode> body;
     FunctionDefNode(SourceLocation loc, Type ret_type, const std::string &name, std::unique_ptr<BlockNode> body = nullptr)
         : ASTNode(loc, ASTNodeType::FUNCTION_DEF), return_type(ret_type), name(name), body(std::move(body)) {}
+    FunctionDefNode(SourceLocation loc) : ASTNode(loc, ASTNodeType::FUNCTION_DEF) {};
     void accept(ASTVisitor &visitor) override;
 };
 
