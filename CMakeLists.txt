@@ -40,6 +40,7 @@ add_executable(${PROJECT_NAME}
     ${CMAKE_CURRENT_SOURCE_DIR}/src/symboltable/SymboltablePrinter.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/ast/ASTSConstructor.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/manual/parser/MParser.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/manual/parser/ParserException.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/src/manual/parser/Sets.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/src/manual/lexer/MLexer.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/src/manual/lexer/MLexer.cc

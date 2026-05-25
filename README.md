@@ -40,3 +40,9 @@ Du hast zwei Möglichkeiten, den Compiler zu bauen: lokal auf deinem Rechner ode
 * ### Mit docker ausführen
     ```Bash
     docker compose run --rm compiler pfad/zur/datei.txt
+
+---
+
+## Manueller Parser
+
+Neben dem Flex/Bison-Parser gibt es einen handgeschriebenen rekursiv-absteigenden Parser. Details unter [`src/manual/README.md`](src/manual/README.md).

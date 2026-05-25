@@ -1,7 +1,7 @@
 #include "MParser.hh"
 #include "Sets.hh"
-#include <sstream>
 #include <fstream>
+#include "ParserException.hh"
 
 Parser::Parser()
     : lexer(Lexer("")), ast_root(nullptr), current_token(Token(TokenType::END_OF_FILE, "", SourceLocation()))
@@ -47,9 +47,7 @@ Token Parser::consume(const TokenType &expected, const std::string error_msg)
         advance();
         return consumed_token;
     }
-    std::stringstream msg;
-    msg << "Syntax error at position " << current_token.loc << ": " << error_msg;
-    throw std::runtime_error(msg.str());
+    throw ParserException(current_token.loc, error_msg, current_token.type);
 }
 
 void Parser::advance()
@@ -66,7 +64,7 @@ std::unique_ptr<UnitNode> Parser::parse_root()
         consume(TokenType::END_OF_FILE, "Expected end of file");
         return root;
     }
-    throw std::runtime_error("Syntax error: File should begin with function or be empty");
+    throw ParserException(current_token.loc, "function or empty file", current_token.type);
 }
 
 UnitNode *Parser::getAstRoot() const
@@ -87,7 +85,7 @@ void Parser::parse_functions(UnitNode *parent)
         parse_functions(parent);
         return;
     }
-    throw std::runtime_error("Syntax error: File should begin with function or be empty");
+    throw ParserException(current_token.loc, "function or empty file", current_token.type);
 }
 
 std::unique_ptr<FunctionDefNode> Parser::parse_function()
@@ -121,7 +119,7 @@ void Parser::parse_function2(FunctionDefNode *parent)
         return;
     }
 
-    throw std::runtime_error("Expected -> or Body definition");
+    throw ParserException(current_token.loc, "-> or body definition", current_token.type);
 }
 
 std::unique_ptr<BlockNode> Parser::parse_body()
@@ -135,7 +133,7 @@ std::unique_ptr<BlockNode> Parser::parse_body()
         consume(TokenType::RBRACE, "Expected }");
         return body;
     }
-    throw std::runtime_error("Expected Body definition");
+    throw ParserException(current_token.loc, "body definition", current_token.type);
 }
 
 void Parser::parse_contents(BlockNode *parent)
@@ -150,7 +148,7 @@ void Parser::parse_contents(BlockNode *parent)
         parse_contents(parent);
         return;
     }
-    throw std::runtime_error("Expected empty or content_item");
+    throw ParserException(current_token.loc, "empty or content_item", current_token.type);
 }
 
 std::unique_ptr<ASTNode> Parser::parse_content_item()
@@ -171,7 +169,7 @@ std::unique_ptr<ASTNode> Parser::parse_content_item()
     {
         return parse_identifier_call();
     }
-    throw std::runtime_error("Unexpected content");
+    throw ParserException(current_token.loc, "content item", current_token.type);
 }
 
 std::unique_ptr<ReturnNode> Parser::parse_return_statement()
@@ -181,7 +179,7 @@ std::unique_ptr<ReturnNode> Parser::parse_return_statement()
         consume(TokenType::RETURN, "Expected return");
         return parse_return_statement2();
     }
-    throw std::runtime_error("Unexpected return");
+    throw ParserException(current_token.loc, "return statement", current_token.type);
 }
 
 std::unique_ptr<ReturnNode> Parser::parse_return_statement2()
@@ -208,7 +206,7 @@ std::unique_ptr<ReturnNode> Parser::parse_return_statement2()
         return_node->expression = std::make_unique<VarRefNode>(identifier_token.loc, identifier_token.lexeme);
         return return_node;
     }
-    throw std::runtime_error("Unexpected return");
+    throw ParserException(current_token.loc, "return statement", current_token.type);
 }
 
 std::unique_ptr<VarDeclNode> Parser::parse_var_decl()
@@ -232,7 +230,7 @@ std::unique_ptr<VarDeclNode> Parser::parse_var_decl()
         parse_var_decl_string(var_decl_node.get());
         return var_decl_node;
     }
-    throw std::runtime_error("Expected variable declaration");
+    throw ParserException(current_token.loc, "variable declaration", current_token.type);
 }
 
 void Parser::parse_var_decl_int(VarDeclNode *parent)
@@ -250,7 +248,7 @@ void Parser::parse_var_decl_int(VarDeclNode *parent)
         consume(TokenType::SEMICOLON, "Expected ;");
         return;
     }
-    throw std::runtime_error("Expected ; or assignment in int declaration");
+    throw ParserException(current_token.loc, "; or assignment in int declaration", current_token.type);
 }
 
 void Parser::parse_var_decl_string(VarDeclNode *parent)
@@ -268,7 +266,7 @@ void Parser::parse_var_decl_string(VarDeclNode *parent)
         consume(TokenType::SEMICOLON, "Expected ;");
         return;
     }
-    throw std::runtime_error("Expected ; or assignment in string declaration");
+    throw ParserException(current_token.loc, "; or assignment in string declaration", current_token.type);
 }
 
 std::unique_ptr<ASTNode> Parser::parse_identifier_call()
@@ -279,7 +277,7 @@ std::unique_ptr<ASTNode> Parser::parse_identifier_call()
 
         return parse_identifier_call2(identifier_token);
     }
-    throw std::runtime_error("Expected identifier");
+    throw ParserException(current_token.loc, "identifier", current_token.type);
 }
 
 std::unique_ptr<ASTNode> Parser::parse_identifier_call2(const Token &identifier_token)
@@ -293,7 +291,7 @@ std::unique_ptr<ASTNode> Parser::parse_identifier_call2(const Token &identifier_
         return parse_var_assign(identifier_token);
     }
 
-    throw std::runtime_error("Expected '(' for function call or '=' for variable assignment");
+    throw ParserException(current_token.loc, "'(' for function call or '=' for variable assignment", current_token.type);
 }
 
 std::unique_ptr<ASTNode> Parser::parse_function_call(const Token &identifier_token)
@@ -306,7 +304,7 @@ std::unique_ptr<ASTNode> Parser::parse_function_call(const Token &identifier_tok
         // TODO: Anstatt VarRefNode -> FuncRefNode
         return std::make_unique<VarRefNode>(identifier_token.loc, identifier_token.lexeme);
     }
-    throw std::runtime_error("Expected function call");
+    throw ParserException(current_token.loc, "function call", current_token.type);
 }
 
 std::unique_ptr<BinaryOpNode> Parser::parse_var_assign(const Token &identifier_token)
@@ -321,7 +319,7 @@ std::unique_ptr<BinaryOpNode> Parser::parse_var_assign(const Token &identifier_t
         auto assign_node = std::make_unique<BinaryOpNode>(assign_token.loc, OperationType::ASSIGN, std::move(assign_left_node), std::move(assign_right_node));
         return assign_node;
     }
-    throw std::runtime_error("Expected '=' for variable assignment");
+    throw ParserException(current_token.loc, "'=' for variable assignment", current_token.type);
 }
 
 std::unique_ptr<ASTNode> Parser::parse_var_assign2()
@@ -344,7 +342,7 @@ std::unique_ptr<ASTNode> Parser::parse_var_assign2()
         consume(TokenType::SEMICOLON, "Expected ';'");
         return std::make_unique<VarRefNode>(identifier_token.loc, identifier_token.lexeme);
     }
-    throw std::runtime_error("Expected initializer expression");
+    throw ParserException(current_token.loc, "initializer expression", current_token.type);
 }
 
 Type Parser::parse_type()
@@ -364,6 +362,6 @@ Type Parser::parse_type()
         consume(TokenType::TYPE_VOID, "Expected type: void");
         return Type::VOID;
     default:
-        throw std::runtime_error("Unexpected type");
+        throw ParserException(current_token.loc, "type", current_token.type);
     }
 }
