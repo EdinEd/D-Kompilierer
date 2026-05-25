@@ -20,7 +20,7 @@ run_test_suite() {
         
         $COMPILER -m $input_file > /dev/null 2>&1
         
-        # Speichere den Rückgabewert
+        
         ACTUAL_CODE=$?
         
         if [ $ACTUAL_CODE -eq $EXPECTED_CODE ]; then
@@ -39,7 +39,29 @@ echo "Building Compiler in project root..."
 cd ..
 mkdir -p build
 cd build
-cmake -DBISON_EXECUTABLE=/usr/local/bin/bison ..
+
+
+CMAKE_ARGS=""
+
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    if command -v brew &> /dev/null; then
+        BREW_BISON="$(brew --prefix bison)/bin/bison"
+        if [ -x "$BREW_BISON" ]; then
+            CMAKE_ARGS="-DBISON_EXECUTABLE=$BREW_BISON"
+            echo "macOS recognized: Homebrew Bison ($BREW_BISON)"
+        fi
+    fi
+elif [[ "$OSTYPE" == "linux-gnu"* ]] || [[ "$OSTYPE" == "msys" ]] || [[ "$OSTYPE" == "cygwin" ]]; then
+    if [ -x "/usr/local/bin/bison" ]; then
+        CMAKE_ARGS="-DBISON_EXECUTABLE=/usr/local/bin/bison"
+        echo "Linux/Windows recognized: Bison (/usr/local/bin/bison)"
+    fi
+fi
+
+echo "Running: cmake $CMAKE_ARGS .."
+cmake $CMAKE_ARGS ..
+
+
 make
 cd ../tests
 

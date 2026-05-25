@@ -1,10 +1,6 @@
 #include "MLexer.hh"
 #include <cctype>
 
-// Schlüsselworttabelle. Nach der Identifier-Scan-Phase wird
-// geprüft, ob das gelesene Lexem ein reserviertes Wort ist.
-// (Mogensen §2.4: Keyword Recognition via hash-table lookup)
-
 const std::unordered_map<std::string, TokenType> Lexer::keywords = {
     {"zurück", TokenType::RETURN},
     {"zahl",   TokenType::TYPE_INT},
@@ -15,8 +11,6 @@ const std::unordered_map<std::string, TokenType> Lexer::keywords = {
 
 Lexer::Lexer(const std::string &source)
     : source(source), pos(0), line(1), column(1) {}
-
-// --- öffentliche Schnittstelle ---
 
 Token Lexer::getNextToken()
 {
@@ -64,8 +58,6 @@ Token Lexer::getNextToken()
     }
 }
 
-// --- Zahlen: [0-9]+ ---
-
 Token Lexer::readNumber()
 {
     SourceLocation start = currentLocation();
@@ -76,10 +68,6 @@ Token Lexer::readNumber()
 
     return Token(TokenType::NUMBER, lexeme, spanningLocation(start));
 }
-
-// --- Identifier / Schlüsselwörter ---
-// Regex: [Buchstabe][Buchstabe | Ziffer | _]*
-// Deutsche Umlaute und ß sind als Buchstaben erlaubt.
 
 Token Lexer::readIdentifierOrKeyword()
 {
@@ -105,21 +93,19 @@ Token Lexer::readIdentifierOrKeyword()
     return Token(type, lexeme, spanningLocation(start));
 }
 
-// --- Zeichenketten: "(\\.|[^\\"])*" ---
-
 Token Lexer::readString()
 {
     SourceLocation start = currentLocation();
-    advance();               // öffnendes " überspringen
+    advance();
     std::string content;
 
     while (!isAtEnd() && peek() != '"')
     {
         if (peek() == '\\')
         {
-            content += advance();      // Backslash behalten
+            content += advance();
             if (!isAtEnd() && peek() != '"')
-                content += advance();  // escaptes Zeichen
+                content += advance();
         }
         else
         {
@@ -128,12 +114,10 @@ Token Lexer::readString()
     }
 
     if (!isAtEnd())
-        advance();           // schließendes " überspringen
+        advance();
 
     return Token(TokenType::STRING, content, spanningLocation(start));
 }
-
-// --- Leerraum überspringen: Leerzeichen, Tabs, Zeilenumbrüche ---
 
 void Lexer::skipWhitespace()
 {
@@ -149,23 +133,17 @@ void Lexer::skipWhitespace()
     }
 }
 
-// --- Zeilenkommentar: €€ ... \n ---
-// Der Aufrufer (getNextToken) prüft vorab mit matches("€€"),
-// ob tatsächlich ein Kommentar beginnt.
-
 void Lexer::skipLineComment()
 {
-    advance();   // €
-    advance();   // €
-    advance();   // €
-    advance();   // €
-    advance();   // €
-    advance();   // €
+    advance();   
+    advance();   
+    advance();   
+    advance();   
+    advance();   
+    advance();   
     while (!isAtEnd() && peek() != '\n')
         advance();
 }
-
-// --- Zeichen-weises Lesen ---
 
 char Lexer::peek()           const { return peek(0); }
 
@@ -198,19 +176,12 @@ bool Lexer::isAtEnd() const
     return pos >= source.length();
 }
 
-// --- Mehrzeichen-Vergleich ---
-// Vergleicht den Substring ab position pos mit dem Parameter.
-// Funktioniert für ASCII und UTF-8, solange Source-Datei
-// und Eingabe die gleiche Kodierung verwenden (beides UTF-8).
-
 bool Lexer::matches(const std::string &text) const
 {
     if (pos + text.length() > source.length())
         return false;
     return source.compare(pos, text.length(), text) == 0;
 }
-
-// --- Buchstaben-Erkennung (ASCII + deutsche Sonderzeichen) ---
 
 bool Lexer::isAsciiLetter(char c) const
 {
@@ -234,10 +205,6 @@ bool Lexer::isLetterContinuation() const
     char c = peek();
     return isAsciiLetter(c) || isdigit(c) || c == '_' || isGermanLetter();
 }
-
-// --- SourceLocation-Helfer ---
-// currentLocation  → Position vor aktuellem Zeichen
-// spanningLocation → von start bis aktuelle Position
 
 SourceLocation Lexer::currentLocation() const
 {
