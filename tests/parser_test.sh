@@ -1,5 +1,10 @@
 #!/bin/bash
 
+MANUAL_FLAG=""
+if [ "$1" = "-m" ]; then
+    MANUAL_FLAG="-m"
+fi
+
 COMPILER="build/compiler"
 GREEN='\033[0;32m'
 RED='\033[0;31m'
@@ -18,7 +23,7 @@ run_test_suite() {
     for input_file in $FOLDER/*.d; do
         [ -e "$input_file" ] || continue 
         
-        $COMPILER -m $input_file > /dev/null 2>&1
+        $COMPILER $MANUAL_FLAG $input_file > /dev/null 2>&1
         
         
         ACTUAL_CODE=$?
@@ -79,6 +84,4 @@ else
     exit 0
 fi
 
-echo "Cleaning up..."
-# Nicht den build-Ordner löschen, wenn er für weitere Tests gebraucht wird.
-# rm -rf ../build
+
