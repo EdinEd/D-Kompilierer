@@ -1,34 +1,186 @@
 #include "MLexer.hh"
 #include <cctype>
 
-const std::map<std::string, TokenType> Lexer::keywords = {
+// Schlüsselworttabelle. Nach der Identifier-Scan-Phase wird
+// geprüft, ob das gelesene Lexem ein reserviertes Wort ist.
+// (Mogensen §2.4: Keyword Recognition via hash-table lookup)
+
+const std::unordered_map<std::string, TokenType> Lexer::keywords = {
     {"zurück", TokenType::RETURN},
-    {"zahl", TokenType::TYPE_INT},
-    {"faden", TokenType::TYPE_STRING},
-    {"funk", TokenType::FUNK},
-    {"leer", TokenType::TYPE_VOID}
+    {"zahl",   TokenType::TYPE_INT},
+    {"faden",  TokenType::TYPE_STRING},
+    {"funk",   TokenType::FUNK},
+    {"leer",   TokenType::TYPE_VOID}
 };
 
 Lexer::Lexer(const std::string &source)
-    : source(source), position(0), line(1), column(1) {}
+    : source(source), pos(0), line(1), column(1) {}
 
-bool Lexer::isAtEnd() const
+// --- öffentliche Schnittstelle ---
+
+Token Lexer::getNextToken()
 {
-    return position >= source.length();
+    skipWhitespace();
+    if (matches("€€"))
+        skipLineComment();
+    skipWhitespace();
+
+    SourceLocation loc = currentLocation();
+
+    if (isAtEnd())
+        return Token(TokenType::END_OF_FILE, "", loc);
+
+    if (isdigit(peek()))
+        return readNumber();
+
+    if (isLetterStart())
+        return readIdentifierOrKeyword();
+
+    if (peek() == '"')
+        return readString();
+
+    advance();
+
+    switch (peek(-1))
+    {
+    case '(': return Token(TokenType::LPAREN, "(",  loc);
+    case ')': return Token(TokenType::RPAREN, ")",  loc);
+    case '{': return Token(TokenType::LBRACE, "{",  loc);
+    case '}': return Token(TokenType::RBRACE, "}",  loc);
+    case ';': return Token(TokenType::SEMICOLON, ";", loc);
+    case '=': return Token(TokenType::ASSIGN, "=",  loc);
+    case '+': return Token(TokenType::PLUS, "+",    loc);
+
+    case '-':
+        if (!isAtEnd() && peek() == '>')
+        {
+            advance();
+            return Token(TokenType::ARROW, "->", spanningLocation(loc));
+        }
+        return Token(TokenType::MINUS, "-", loc);
+
+    default:
+        throw LexerException(loc, peek(-1));
+    }
 }
 
-char Lexer::peek() const
+// --- Zahlen: [0-9]+ ---
+
+Token Lexer::readNumber()
+{
+    SourceLocation start = currentLocation();
+    std::string lexeme;
+
+    while (!isAtEnd() && isdigit(peek()))
+        lexeme += advance();
+
+    return Token(TokenType::NUMBER, lexeme, spanningLocation(start));
+}
+
+// --- Identifier / Schlüsselwörter ---
+// Regex: [Buchstabe][Buchstabe | Ziffer | _]*
+// Deutsche Umlaute und ß sind als Buchstaben erlaubt.
+
+Token Lexer::readIdentifierOrKeyword()
+{
+    SourceLocation start = currentLocation();
+    std::string lexeme;
+
+    while (!isAtEnd() && isLetterContinuation())
+    {
+        if (isGermanLetter())
+        {
+            lexeme += advance();
+            lexeme += advance();
+        }
+        else
+        {
+            lexeme += advance();
+        }
+    }
+
+    auto it = keywords.find(lexeme);
+    TokenType type = (it != keywords.end()) ? it->second : TokenType::IDENTIFIER;
+
+    return Token(type, lexeme, spanningLocation(start));
+}
+
+// --- Zeichenketten: "(\\.|[^\\"])*" ---
+
+Token Lexer::readString()
+{
+    SourceLocation start = currentLocation();
+    advance();               // öffnendes " überspringen
+    std::string content;
+
+    while (!isAtEnd() && peek() != '"')
+    {
+        if (peek() == '\\')
+        {
+            content += advance();      // Backslash behalten
+            if (!isAtEnd() && peek() != '"')
+                content += advance();  // escaptes Zeichen
+        }
+        else
+        {
+            content += advance();
+        }
+    }
+
+    if (!isAtEnd())
+        advance();           // schließendes " überspringen
+
+    return Token(TokenType::STRING, content, spanningLocation(start));
+}
+
+// --- Leerraum überspringen: Leerzeichen, Tabs, Zeilenumbrüche ---
+
+void Lexer::skipWhitespace()
+{
+    while (!isAtEnd())
+    {
+        char c = peek();
+        if (c == ' ' || c == '\t' || c == '\r' || c == '\n')
+        {
+            advance();
+            continue;
+        }
+        break;
+    }
+}
+
+// --- Zeilenkommentar: €€ ... \n ---
+// Der Aufrufer (getNextToken) prüft vorab mit matches("€€"),
+// ob tatsächlich ein Kommentar beginnt.
+
+void Lexer::skipLineComment()
+{
+    advance();   // €
+    advance();   // €
+    advance();   // €
+    advance();   // €
+    advance();   // €
+    advance();   // €
+    while (!isAtEnd() && peek() != '\n')
+        advance();
+}
+
+// --- Zeichen-weises Lesen ---
+
+char Lexer::peek()           const { return peek(0); }
+
+char Lexer::peek(size_t offset) const
+{
+    if (pos + offset >= source.length())
+        return '\0';
+    return source[pos + offset];
+}
+
+char Lexer::advance()
 {
     if (isAtEnd())
         return '\0';
-    return source[position];
-}
-
-char Lexer::get()
-{
-    if (isAtEnd())
-        return '\0';
-    char c = source[position++];
+    char c = source[pos++];
     if (c == '\n')
     {
         line++;
@@ -41,177 +193,58 @@ char Lexer::get()
     return c;
 }
 
-void Lexer::skipWhitespaceAndComments()
+bool Lexer::isAtEnd() const
 {
-    while (!isAtEnd())
-    {
-        char c = peek();
-        if (isspace(c))
-        {
-            get();
-        }
-        else if (c == '\xe2' && position + 2 < source.length() && 
-                 source[position + 1] == '\x82' && source[position + 2] == '\xac')
-        {
-            // Check for €€
-            if (position + 5 < source.length() &&
-                source[position + 3] == '\xe2' && source[position + 4] == '\x82' && source[position + 5] == '\xac')
-            {
-                for (int i = 0; i < 6; ++i) get();
-                while (!isAtEnd() && peek() != '\n')
-                {
-                    get();
-                }
-            }
-            else
-            {
-                break;
-            }
-        }
-        else
-        {
-            break;
-        }
-    }
+    return pos >= source.length();
 }
 
-Token Lexer::getNextToken()
+// --- Mehrzeichen-Vergleich ---
+// Vergleicht den Substring ab position pos mit dem Parameter.
+// Funktioniert für ASCII und UTF-8, solange Source-Datei
+// und Eingabe die gleiche Kodierung verwenden (beides UTF-8).
+
+bool Lexer::matches(const std::string &text) const
 {
-    skipWhitespaceAndComments();
+    if (pos + text.length() > source.length())
+        return false;
+    return source.compare(pos, text.length(), text) == 0;
+}
 
-    int startLine = line;
-    int startCol = column;
+// --- Buchstaben-Erkennung (ASCII + deutsche Sonderzeichen) ---
 
-    if (isAtEnd())
-    {
-        return Token(TokenType::END_OF_FILE, "", SourceLocation(startLine, startCol, line, column));
-    }
+bool Lexer::isAsciiLetter(char c) const
+{
+    return ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z'));
+}
 
+bool Lexer::isGermanLetter() const
+{
+    return matches("Ä") || matches("Ö") || matches("Ü")
+        || matches("ä") || matches("ö") || matches("ü")
+        || matches("ß");
+}
+
+bool Lexer::isLetterStart() const
+{
+    return isAsciiLetter(peek()) || isGermanLetter();
+}
+
+bool Lexer::isLetterContinuation() const
+{
     char c = peek();
-
-    if (isdigit(c))
-        return number();
-    
-    // Check for identifier start: [a-zA-ZÄÖÜäöüß]
-    // UTF-8 encoding for German characters:
-    // Ä: \xc3\x84, Ö: \xc3\x96, Ü: \xc3\x9c
-    // ä: \xc3\xa4, ö: \xc3\xb6, ü: \xc3\xbc, ß: \xc3\x9f
-    if (isalpha(c) || 
-        (c == '\xc3' && position + 1 < source.length() && 
-         (source[position+1] == '\x84' || source[position+1] == '\x96' || source[position+1] == '\x9c' ||
-          source[position+1] == '\xa4' || source[position+1] == '\xb6' || source[position+1] == '\xbc' ||
-          source[position+1] == '\x9f')))
-    {
-        return identifier();
-    }
-
-    if (c == '"')
-        return string();
-
-    get();
-    std::string lexeme(1, c);
-    TokenType type = TokenType::UNKNOWN;
-
-    switch (c)
-    {
-    case '(':
-        type = TokenType::LPAREN;
-        break;
-    case ')':
-        type = TokenType::RPAREN;
-        break;
-    case '{':
-        type = TokenType::LBRACE;
-        break;
-    case '}':
-        type = TokenType::RBRACE;
-        break;
-    case ';':
-        type = TokenType::SEMICOLON;
-        break;
-    case '=':
-        type = TokenType::ASSIGN;
-        break;
-    case '+':
-        type = TokenType::PLUS;
-        break;
-    case '-':
-        if (peek() == '>')
-        {
-            get();
-            lexeme = "->";
-            type = TokenType::ARROW;
-        }
-        else
-        {
-            type = TokenType::MINUS;
-        }
-        break;
-    }
-
-    return Token(type, lexeme, SourceLocation(startLine, startCol, line, column));
+    return isAsciiLetter(c) || isdigit(c) || c == '_' || isGermanLetter();
 }
 
-Token Lexer::number()
+// --- SourceLocation-Helfer ---
+// currentLocation  → Position vor aktuellem Zeichen
+// spanningLocation → von start bis aktuelle Position
+
+SourceLocation Lexer::currentLocation() const
 {
-    int startLine = line;
-    int startCol = column;
-    std::string lexeme;
-    while (isdigit(peek()))
-    {
-        lexeme += get();
-    }
-    return Token(TokenType::NUMBER, lexeme, SourceLocation(startLine, startCol, line, column));
+    return SourceLocation(line, column, line, column);
 }
 
-Token Lexer::identifier()
+SourceLocation Lexer::spanningLocation(const SourceLocation &start) const
 {
-    int startLine = line;
-    int startCol = column;
-    std::string lexeme;
-
-    while (!isAtEnd())
-    {
-        char c = peek();
-        if (isalnum(c) || c == '_' || (unsigned char)c > 127)
-        {
-            // for simplicity, all non-ASCII are consumed as part of identifier if it started correctly
-            lexeme += get();
-        }
-        else
-        {
-            break;
-        }
-    }
-
-    if (keywords.count(lexeme))
-    {
-        return Token(keywords.at(lexeme), lexeme, SourceLocation(startLine, startCol, line, column));
-    }
-    return Token(TokenType::IDENTIFIER, lexeme, SourceLocation(startLine, startCol, line, column));
-}
-
-Token Lexer::string()
-{
-    int startLine = line;
-    int startCol = column;
-    get(); // skip opening "
-    std::string lexeme;
-    while (!isAtEnd() && peek() != '"')
-    {
-        if (peek() == '\\')
-        {
-            lexeme += get(); // keep backslash
-            if (!isAtEnd())
-                lexeme += get(); // keep escaped char
-        }
-        else
-        {
-            lexeme += get();
-        }
-    }
-    if (!isAtEnd())
-        get(); // skip closing "
-
-    return Token(TokenType::STRING, lexeme, SourceLocation(startLine, startCol, line, column));
+    return SourceLocation(start.line_begin, start.column_begin, line, column);
 }
