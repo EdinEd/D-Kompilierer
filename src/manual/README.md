@@ -51,3 +51,7 @@ Both phases use dedicated exception types that capture the error location:
 |--------------------|-----------------------------------------|
 | `LexerException`   | `SourceLocation loc`, `char invalid_char` |
 | `ParserException`  | `SourceLocation loc`, `std::string expected`, `TokenType actual` |
+
+## Grammar
+
+The full grammar definition can be found in [`grammer.md`](grammer.md).

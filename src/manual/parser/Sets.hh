@@ -3,9 +3,6 @@
 
 namespace sets
 {
-    // ==========================================
-    //                 FIRST SETS
-    // ==========================================
 
     inline bool first_functions(const Token &token)
     {
@@ -14,7 +11,7 @@ namespace sets
         case TokenType::FUNK:
             return true;
         default:
-            return false; // Kann auch Epsilon sein
+            return false;
         }
     }
 
@@ -118,7 +115,7 @@ namespace sets
         case TokenType::IDENTIFIER:
             return true;
         default:
-            return false; // Kann auch Epsilon sein
+            return false; 
         }
     }
 
@@ -177,9 +174,6 @@ namespace sets
         return token.type == TokenType::LPAREN;
     }
 
-    // ==========================================
-    //                 FOLLOW SETS
-    // ==========================================
 
     inline bool follow_functions(const Token &token)
     {
@@ -215,8 +209,6 @@ namespace sets
         return token.type == TokenType::LBRACE;
     }
 
-    // Hilfskonstrukt für die wiederkehrende Statement-Menge im Block
-    // { RETURN, TYPE_INT, TYPE_STRING, LBRACE, IDENTIFIER, RBRACE }
     inline bool is_statement_follow(const Token &token)
     {
         switch (token.type)
