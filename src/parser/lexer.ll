@@ -59,6 +59,7 @@ blank   [ \t\r]
 "*"        return yy::parser::make_STAR (loc);
 "/"        return yy::parser::make_SLASH (loc);
 "%"        return yy::parser::make_PERCENT (loc);
+","        return yy::parser::make_COMMA (loc);
 
 
 {int}      return make_NUMBER (yytext, loc);

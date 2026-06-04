@@ -11,16 +11,10 @@
   # include <string>
   #include <vector>
   #include <memory>
+  #include "../ast/ASTNode.hh"
+  #include "../common/SourceLocation.hh"
+  #include "../common/Types.hh"
   class Driver;
-  class ASTNode;
-  class BlockNode;
-  class FunctionDefNode;
-  class UnitNode;
-  class VarDeclNode;
-  class ReturnNode;
-  class NumberNode;
-  class StringNode;
-  class BinaryOpNode;
   enum class Type;
   enum class OperationType;
 }
@@ -35,9 +29,7 @@
 
 %code {
   #include "Driver.hh"
-  #include "../common/SourceLocation.hh"
-  #include "../common/Types.hh"
-  #include "../ast/ASTNode.hh"
+  
 
   inline SourceLocation toASTLoc(const yy::location& l) {
       return SourceLocation(
@@ -69,6 +61,7 @@
   MINUS "-"
   SLASH "/"
   PERCENT "%"
+  COMMA ","
 ;
 
 %token <std::string> IDENTIFIER "identifier"
@@ -85,6 +78,10 @@
 %nterm <std::unique_ptr<VarDeclNode>> var_decl;
 %nterm <std::unique_ptr<ReturnNode>> return_statement;
 %nterm <std::unique_ptr<BinaryOpNode>> var_assign;
+%nterm <FunctionParameter> param;
+%nterm <std::vector<FunctionParameter>> param_list params;
+
+
 
 %printer { yyo << $$; } <int> <std::string>;
 %printer { yyo << "[AST Node]"; } <std::unique_ptr<ASTNode>> <std::unique_ptr<BlockNode>> <std::unique_ptr<UnitNode>> <std::unique_ptr<FunctionDefNode>> <Type>; 
@@ -104,9 +101,20 @@ functions:
 | functions function     {$1->addFunction(std::move($2)); $$ = std::move($1);};
 
 function:
-  FUNK IDENTIFIER LPAREN RPAREN ARROW function_type body{ $$ = std::make_unique<FunctionDefNode>(toASTLoc(@$), $6, $2, std::move($7)); }
-  | FUNK IDENTIFIER LPAREN RPAREN body { $$ = std::make_unique<FunctionDefNode>(toASTLoc(@$), Type::VOID, $2, std::move($5)); }
+  FUNK IDENTIFIER LPAREN param_list RPAREN ARROW function_type body{ $$ = std::make_unique<FunctionDefNode>(toASTLoc(@$), $7, $2, std::move($8), std::move($4)); }
+  | FUNK IDENTIFIER LPAREN param_list RPAREN body { $$ = std::make_unique<FunctionDefNode>(toASTLoc(@$), Type::VOID, $2, std::move($6), std::move($4)); }
   | error RPAREN{ yyerrok; };
+
+param:
+  variable_type IDENTIFIER { $$ = FunctionParameter{ $1, $2 }; };
+
+params:
+  param { $$ = std::vector<FunctionParameter>{ $1 }; }
+  | params COMMA param { $1.push_back($3); $$ = std::move($1); };
+
+param_list:
+  %empty { $$ = std::vector<FunctionParameter>{}; }
+  | params { $$ = std::move($1); };
 
 function_type:
   TYPE_VOID { $$ = Type::VOID; }

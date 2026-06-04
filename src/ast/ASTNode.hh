@@ -8,6 +8,12 @@
 #include "../common/Types.hh"
 #include "ASTVisitor.hh"
 
+struct FunctionParameter
+{
+    Type type;
+    std::string identifier;
+};
+
 class ASTNode
 {
 public:
@@ -64,7 +70,7 @@ public:
         : ASTNode(loc, ASTNodeType::VAR_DECL), type(t), name(n), init_value(std::move(init)) {}
 
     VarDeclNode(SourceLocation loc)
-        : ASTNode(loc, ASTNodeType::VAR_DECL){}
+        : ASTNode(loc, ASTNodeType::VAR_DECL) {}
     void accept(ASTVisitor &visitor) override;
 };
 
@@ -95,10 +101,10 @@ class FunctionDefNode : public ASTNode
 public:
     Type return_type;
     std::string name;
-    // std::vector<std::pair<Type, std::string>> parameters;
+    std::vector<FunctionParameter> parameters;
     std::unique_ptr<BlockNode> body;
-    FunctionDefNode(SourceLocation loc, Type ret_type, const std::string &name, std::unique_ptr<BlockNode> body = nullptr)
-        : ASTNode(loc, ASTNodeType::FUNCTION_DEF), return_type(ret_type), name(name), body(std::move(body)) {}
+    FunctionDefNode(SourceLocation loc, Type ret_type, const std::string &name, std::unique_ptr<BlockNode> body, std::vector<FunctionParameter> params = {})
+        : ASTNode(loc, ASTNodeType::FUNCTION_DEF), return_type(ret_type), name(name), body(std::move(body)), parameters(params) {}
     FunctionDefNode(SourceLocation loc) : ASTNode(loc, ASTNodeType::FUNCTION_DEF) {};
     void accept(ASTVisitor &visitor) override;
 };

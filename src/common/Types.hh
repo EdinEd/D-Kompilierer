@@ -2,11 +2,12 @@
 
 enum class OperationType
 {
-    PLUS,
-    MINUS,
+    ADD,
+    SUBTRACT,
     MULTIPLY,
     DIVIDE,
-    ASSIGN
+    ASSIGN,
+    MODULO
 };
 
 enum class Type
