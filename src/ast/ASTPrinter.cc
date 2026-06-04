@@ -114,7 +114,14 @@ void ASTPrinter::visit(FunctionCallNode *node)
 {
     printIndent();
     std::cout << "| FUNKTION_CALL: " << node->function_name << std::endl;
-    // TODO: Parameter ausgeben
+    if (node->params.empty()) return;
+    
+    indent_level++;
+    for (const auto &param : node->params)
+    {
+        param->accept(*this);
+    }
+    indent_level--;
 }
 
 void ASTPrinter::visit(BlockNode *node)
