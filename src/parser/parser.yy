@@ -64,24 +64,33 @@
   FUNK "funk"
   TYPE_VOID "leer"
   ASSIGN "="
+  STAR "*"
+  PLUS "+"
+  MINUS "-"
+  SLASH "/"
+  PERCENT "%"
 ;
 
 %token <std::string> IDENTIFIER "identifier"
 %token <int> NUMBER "number"
 %token <std::string> STRING
-//%nterm <int> body functions function content_item contents;
 %nterm <std::unique_ptr<UnitNode>> unit;
 %nterm <std::unique_ptr<BlockNode>> body contents;
 %nterm <std::unique_ptr<UnitNode>> functions;
 %nterm <std::unique_ptr<FunctionDefNode>> function;
 %nterm <std::unique_ptr<ASTNode>> content_item;
-%nterm <Type> type;
+%nterm <std::unique_ptr<ASTNode>> expr;
+%nterm <Type> function_type;
+%nterm <Type> variable_type;
 %nterm <std::unique_ptr<VarDeclNode>> var_decl;
 %nterm <std::unique_ptr<ReturnNode>> return_statement;
 %nterm <std::unique_ptr<BinaryOpNode>> var_assign;
 
 %printer { yyo << $$; } <int> <std::string>;
 %printer { yyo << "[AST Node]"; } <std::unique_ptr<ASTNode>> <std::unique_ptr<BlockNode>> <std::unique_ptr<UnitNode>> <std::unique_ptr<FunctionDefNode>> <Type>; 
+
+%left PLUS MINUS
+%left STAR SLASH PERCENT
 
 %%
 %start unit;
@@ -95,25 +104,35 @@ functions:
 | functions function     {$1->addFunction(std::move($2)); $$ = std::move($1);};
 
 function:
-  FUNK IDENTIFIER LPAREN RPAREN ARROW type body{ $$ = std::make_unique<FunctionDefNode>(toASTLoc(@$), $6, $2, std::move($7)); }
+  FUNK IDENTIFIER LPAREN RPAREN ARROW function_type body{ $$ = std::make_unique<FunctionDefNode>(toASTLoc(@$), $6, $2, std::move($7)); }
   | FUNK IDENTIFIER LPAREN RPAREN body { $$ = std::make_unique<FunctionDefNode>(toASTLoc(@$), Type::VOID, $2, std::move($5)); }
   | error RPAREN{ yyerrok; };
 
-type:
+function_type:
+  TYPE_VOID { $$ = Type::VOID; }
+  | variable_type { $$ = $1; };
+
+variable_type:
   TYPE_INT { $$ = Type::INTEGER; }
-  | TYPE_VOID { $$ = Type::VOID; }
   | TYPE_STRING { $$ = Type::STRING; };
 
 var_decl:
-  TYPE_INT IDENTIFIER SEMICOLON { $$ = std::make_unique<VarDeclNode>(toASTLoc(@$), Type::INTEGER, $2, nullptr); }
-  | TYPE_STRING IDENTIFIER SEMICOLON { $$ = std::make_unique<VarDeclNode>(toASTLoc(@$), Type::STRING, $2, nullptr); }
-  | TYPE_INT IDENTIFIER ASSIGN NUMBER SEMICOLON { $$ = std::make_unique<VarDeclNode>(toASTLoc(@$), Type::INTEGER, $2, std::make_unique<NumberNode>(toASTLoc(@4), $4)); }
-  | TYPE_STRING IDENTIFIER ASSIGN STRING SEMICOLON { $$ = std::make_unique<VarDeclNode>(toASTLoc(@$), Type::STRING, $2, std::make_unique<StringNode>(toASTLoc(@4), $4)); };
+  variable_type IDENTIFIER SEMICOLON { $$ = std::make_unique<VarDeclNode>(toASTLoc(@$), $1, $2, nullptr); }
+  | variable_type IDENTIFIER ASSIGN expr SEMICOLON { $$ = std::make_unique<VarDeclNode>(toASTLoc(@$), $1, $2, std::move($4)); };
 
 var_assign:
-  IDENTIFIER ASSIGN NUMBER SEMICOLON { $$ = std::make_unique<BinaryOpNode>(toASTLoc(@$), OperationType::ASSIGN, std::make_unique<VarRefNode>(toASTLoc(@1), $1), std::make_unique<NumberNode>(toASTLoc(@3), $3)); }
-  | IDENTIFIER ASSIGN STRING SEMICOLON { $$ = std::make_unique<BinaryOpNode>(toASTLoc(@$), OperationType::ASSIGN, std::make_unique<VarRefNode>(toASTLoc(@1), $1), std::make_unique<StringNode>(toASTLoc(@3), $3)); }
-  | IDENTIFIER ASSIGN IDENTIFIER SEMICOLON { $$ = std::make_unique<BinaryOpNode>(toASTLoc(@$), OperationType::ASSIGN, std::make_unique<VarRefNode>(toASTLoc(@1), $1), std::make_unique<VarRefNode>(toASTLoc(@3), $3)); }
+  IDENTIFIER ASSIGN expr SEMICOLON { $$ = std::make_unique<BinaryOpNode>(toASTLoc(@$), OperationType::ASSIGN, std::make_unique<VarRefNode>(toASTLoc(@1), $1), std::move($3)); };
+
+expr:
+  NUMBER { $$ = std::make_unique<NumberNode>(toASTLoc(@$), $1); }
+  | STRING { $$ = std::make_unique<StringNode>(toASTLoc(@$), $1); }
+  | IDENTIFIER { $$ = std::make_unique<VarRefNode>(toASTLoc(@$), $1); }
+  | expr PLUS expr { $$ = std::make_unique<BinaryOpNode>(toASTLoc(@$), OperationType::ADD, std::move($1), std::move($3)); }
+  | expr MINUS expr { $$ = std::make_unique<BinaryOpNode>(toASTLoc(@$), OperationType::SUBTRACT, std::move($1), std::move($3)); }
+  | expr STAR expr { $$ = std::make_unique<BinaryOpNode>(toASTLoc(@$), OperationType::MULTIPLY, std::move($1), std::move($3)); }
+  | expr SLASH expr { $$ = std::make_unique<BinaryOpNode>(toASTLoc(@$), OperationType::DIVIDE, std::move($1), std::move($3)); }
+  | expr PERCENT expr { $$ = std::make_unique<BinaryOpNode>(toASTLoc(@$), OperationType::MODULO, std::move($1), std::move($3)); }
+  | LPAREN expr RPAREN { $$ = std::move($2); };
 
 body:
   LBRACE contents RBRACE { $$ = std::move($2); };
@@ -130,9 +149,7 @@ content_item:
 | error SEMICOLON         {yyerrok;}
 
 return_statement:
-  RETURN NUMBER SEMICOLON { $$ = std::make_unique<ReturnNode>(toASTLoc(@$), std::make_unique<NumberNode>(toASTLoc(@2), $2)); }
-| RETURN STRING SEMICOLON { $$ = std::make_unique<ReturnNode>(toASTLoc(@$), std::make_unique<StringNode>(toASTLoc(@2), $2)); }
-| RETURN IDENTIFIER SEMICOLON { $$ = std::make_unique<ReturnNode>(toASTLoc(@$), std::make_unique<VarRefNode>(toASTLoc(@2), $2)); }
+  RETURN expr SEMICOLON { $$ = std::make_unique<ReturnNode>(toASTLoc(@$), std::move($2)); }
 | RETURN error SEMICOLON { yyerrok; };
 %%
 
