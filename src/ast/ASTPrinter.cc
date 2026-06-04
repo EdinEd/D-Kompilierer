@@ -1,5 +1,8 @@
 #include "ASTPrinter.hh"
 #include "ASTNode.hh"
+#include <iostream>
+#include <sstream>
+#include <vector>
 
 void ASTPrinter::printIndent()
 {
@@ -9,7 +12,7 @@ void ASTPrinter::printIndent()
     }
 }
 
-std::string printRetrunType(Type &t)
+std::string printRetrunType(const Type &t)
 {
     switch (t)
     {
@@ -26,7 +29,7 @@ std::string printRetrunType(Type &t)
     }
 }
 
-std::string getNodeTypeName(ASTNodeType &t)
+std::string getNodeTypeName(const ASTNodeType &t)
 {
     switch (t)
     {
@@ -53,7 +56,7 @@ std::string getNodeTypeName(ASTNodeType &t)
     }
 }
 
-std::string getOpTypeName(OperationType &op)
+std::string getOpTypeName(const OperationType &op)
 {
     switch (op)
     {
@@ -83,10 +86,24 @@ void ASTPrinter::visit(UnitNode *rootNode)
     }
 }
 
+std::stringstream printFunctionParameters(const std::vector<FunctionParameter> &params)
+{
+    std::stringstream ss;
+    for (const auto &param : params)
+    {
+        ss << param.identifier << ": " << printRetrunType(param.type);
+        if (&param != &params.back())
+        {
+            ss << ", ";
+        }
+    }
+    return ss;
+}
+
 void ASTPrinter::visit(FunctionDefNode *node)
 {
     printIndent();
-    std::cout << "| FUNKTION " << node->name << " -> " << printRetrunType(node->return_type) << std::endl;
+    std::cout << "| FUNKTION " << node->name << "(" << printFunctionParameters(node->parameters).str() << ")" << " -> " << printRetrunType(node->return_type) << std::endl;
     if (node->body)
     {
         node->body->accept(*this);
