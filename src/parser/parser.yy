@@ -64,17 +64,22 @@
   FUNK "funk"
   TYPE_VOID "leer"
   ASSIGN "="
+  STAR "*"
+  PLUS "+"
+  MINUS "-"
+  SLASH "/"
+  PERCENT "%"
 ;
 
 %token <std::string> IDENTIFIER "identifier"
 %token <int> NUMBER "number"
 %token <std::string> STRING
-//%nterm <int> body functions function content_item contents;
 %nterm <std::unique_ptr<UnitNode>> unit;
 %nterm <std::unique_ptr<BlockNode>> body contents;
 %nterm <std::unique_ptr<UnitNode>> functions;
 %nterm <std::unique_ptr<FunctionDefNode>> function;
 %nterm <std::unique_ptr<ASTNode>> content_item;
+%nterm <std::unique_ptr<ASTNode>> expr;
 %nterm <Type> type;
 %nterm <std::unique_ptr<VarDeclNode>> var_decl;
 %nterm <std::unique_ptr<ReturnNode>> return_statement;
@@ -82,6 +87,9 @@
 
 %printer { yyo << $$; } <int> <std::string>;
 %printer { yyo << "[AST Node]"; } <std::unique_ptr<ASTNode>> <std::unique_ptr<BlockNode>> <std::unique_ptr<UnitNode>> <std::unique_ptr<FunctionDefNode>> <Type>; 
+
+%left PLUS MINUS
+%left STAR SLASH PERCENT
 
 %%
 %start unit;
@@ -113,7 +121,18 @@ var_decl:
 var_assign:
   IDENTIFIER ASSIGN NUMBER SEMICOLON { $$ = std::make_unique<BinaryOpNode>(toASTLoc(@$), OperationType::ASSIGN, std::make_unique<VarRefNode>(toASTLoc(@1), $1), std::make_unique<NumberNode>(toASTLoc(@3), $3)); }
   | IDENTIFIER ASSIGN STRING SEMICOLON { $$ = std::make_unique<BinaryOpNode>(toASTLoc(@$), OperationType::ASSIGN, std::make_unique<VarRefNode>(toASTLoc(@1), $1), std::make_unique<StringNode>(toASTLoc(@3), $3)); }
-  | IDENTIFIER ASSIGN IDENTIFIER SEMICOLON { $$ = std::make_unique<BinaryOpNode>(toASTLoc(@$), OperationType::ASSIGN, std::make_unique<VarRefNode>(toASTLoc(@1), $1), std::make_unique<VarRefNode>(toASTLoc(@3), $3)); }
+  | IDENTIFIER ASSIGN IDENTIFIER SEMICOLON { $$ = std::make_unique<BinaryOpNode>(toASTLoc(@$), OperationType::ASSIGN, std::make_unique<VarRefNode>(toASTLoc(@1), $1), std::make_unique<VarRefNode>(toASTLoc(@3), $3)); };
+
+expr:
+  NUMBER { $$ = std::make_unique<NumberNode>(toASTLoc(@$), $1); }
+  | STRING { $$ = std::make_unique<StringNode>(toASTLoc(@$), $1); }
+  | IDENTIFIER { $$ = std::make_unique<VarRefNode>(toASTLoc(@$), $1); }
+  | expr PLUS expr { $$ = std::make_unique<BinaryOpNode>(toASTLoc(@$), OperationType::ADD, std::move($1), std::move($3)); }
+  | expr MINUS expr { $$ = std::make_unique<BinaryOpNode>(toASTLoc(@$), OperationType::SUBTRACT, std::move($1), std::move($3)); }
+  | expr STAR expr { $$ = std::make_unique<BinaryOpNode>(toASTLoc(@$), OperationType::MULTIPLY, std::move($1), std::move($3)); }
+  | expr SLASH expr { $$ = std::make_unique<BinaryOpNode>(toASTLoc(@$), OperationType::DIVIDE, std::move($1), std::move($3)); }
+  | expr PERCENT expr { $$ = std::make_unique<BinaryOpNode>(toASTLoc(@$), OperationType::MODULO, std::move($1), std::move($3)); }
+  | LPAREN expr RPAREN { $$ = std::move($2); };
 
 body:
   LBRACE contents RBRACE { $$ = std::move($2); };
