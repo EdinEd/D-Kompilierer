@@ -57,9 +57,9 @@ std::string getOpTypeName(OperationType &op)
 {
     switch (op)
     {
-    case OperationType::PLUS:
+    case OperationType::ADD:
         return "+";
-    case OperationType::MINUS:
+    case OperationType::SUBTRACT:
         return "-";
     case OperationType::MULTIPLY:
         return "*";
@@ -67,6 +67,8 @@ std::string getOpTypeName(OperationType &op)
         return "/";
     case OperationType::ASSIGN:
         return "=";
+    case OperationType::MODULO:
+        return "%";
     default:
         return "unbekannte Operation";
     }

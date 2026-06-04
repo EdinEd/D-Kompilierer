@@ -54,6 +54,11 @@ blank   [ \t\r]
 "funk"     return yy::parser::make_FUNK (loc);
 "leer"     return yy::parser::make_TYPE_VOID (loc);
 "="        return yy::parser::make_ASSIGN (loc);
+"+"        return yy::parser::make_PLUS (loc);
+"-"        return yy::parser::make_MINUS (loc);
+"*"        return yy::parser::make_STAR (loc);
+"/"        return yy::parser::make_SLASH (loc);
+"%"        return yy::parser::make_PERCENT (loc);
 
 
 {int}      return make_NUMBER (yytext, loc);
