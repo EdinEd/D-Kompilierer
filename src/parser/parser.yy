@@ -149,9 +149,7 @@ content_item:
 | error SEMICOLON         {yyerrok;}
 
 return_statement:
-  RETURN NUMBER SEMICOLON { $$ = std::make_unique<ReturnNode>(toASTLoc(@$), std::make_unique<NumberNode>(toASTLoc(@2), $2)); }
-| RETURN STRING SEMICOLON { $$ = std::make_unique<ReturnNode>(toASTLoc(@$), std::make_unique<StringNode>(toASTLoc(@2), $2)); }
-| RETURN IDENTIFIER SEMICOLON { $$ = std::make_unique<ReturnNode>(toASTLoc(@$), std::make_unique<VarRefNode>(toASTLoc(@2), $2)); }
+  RETURN expr SEMICOLON { $$ = std::make_unique<ReturnNode>(toASTLoc(@$), std::move($2)); }
 | RETURN error SEMICOLON { yyerrok; };
 %%
 

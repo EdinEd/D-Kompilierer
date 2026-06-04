@@ -6,5 +6,5 @@ funk main(){
     divide = a / 2;
     modulo = a % 2;
     complex = (a+2)*2-(a%2 * 3);
-    zurück 1;
+    zurück a % 2;
 }
