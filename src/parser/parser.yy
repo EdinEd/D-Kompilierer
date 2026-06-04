@@ -80,6 +80,8 @@
 %nterm <std::unique_ptr<BinaryOpNode>> var_assign;
 %nterm <FunctionParameter> param;
 %nterm <std::vector<FunctionParameter>> param_list params;
+%nterm <std::unique_ptr<FunctionCallNode>> func_call;
+%nterm <std::vector<std::unique_ptr<ASTNode>>> expr_list exprs;
 
 
 
@@ -135,12 +137,21 @@ expr:
   NUMBER { $$ = std::make_unique<NumberNode>(toASTLoc(@$), $1); }
   | STRING { $$ = std::make_unique<StringNode>(toASTLoc(@$), $1); }
   | IDENTIFIER { $$ = std::make_unique<VarRefNode>(toASTLoc(@$), $1); }
+  | func_call { $$ = std::move($1); }
   | expr PLUS expr { $$ = std::make_unique<BinaryOpNode>(toASTLoc(@$), OperationType::ADD, std::move($1), std::move($3)); }
   | expr MINUS expr { $$ = std::make_unique<BinaryOpNode>(toASTLoc(@$), OperationType::SUBTRACT, std::move($1), std::move($3)); }
   | expr STAR expr { $$ = std::make_unique<BinaryOpNode>(toASTLoc(@$), OperationType::MULTIPLY, std::move($1), std::move($3)); }
   | expr SLASH expr { $$ = std::make_unique<BinaryOpNode>(toASTLoc(@$), OperationType::DIVIDE, std::move($1), std::move($3)); }
   | expr PERCENT expr { $$ = std::make_unique<BinaryOpNode>(toASTLoc(@$), OperationType::MODULO, std::move($1), std::move($3)); }
   | LPAREN expr RPAREN { $$ = std::move($2); };
+
+expr_list:
+  %empty { $$ = std::vector<std::unique_ptr<ASTNode>>{}; }
+| exprs { $$ = std::move($1); };
+
+exprs:
+  expr { std::vector<std::unique_ptr<ASTNode>> list; list.push_back(std::move($1)); $$ = std::move(list);}
+| exprs COMMA expr { $1.push_back(std::move($3)); $$ = std::move($1);};
 
 body:
   LBRACE contents RBRACE { $$ = std::move($2); };
@@ -154,7 +165,11 @@ content_item:
 | var_decl                {$$ = std::move($1);}
 | body                    {$$ = std::move($1);}
 | var_assign              {$$ = std::move($1);}
-| error SEMICOLON         {yyerrok;}
+| func_call SEMICOLON     {$$ = std::move($1);}
+| error SEMICOLON         {yyerrok;};
+
+func_call:
+  IDENTIFIER LPAREN expr_list RPAREN {$$ = std::make_unique<FunctionCallNode>(toASTLoc(@$), $1, std::move($3)); };
 
 return_statement:
   RETURN expr SEMICOLON { $$ = std::make_unique<ReturnNode>(toASTLoc(@$), std::move($2)); }

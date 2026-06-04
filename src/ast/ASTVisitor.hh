@@ -9,6 +9,7 @@ class VarDeclNode;
 class ReturnNode;
 class BlockNode;
 class FunctionDefNode;
+class FunctionCallNode;
 class UnitNode;
 
 class ASTVisitor
@@ -18,6 +19,7 @@ public:
     virtual ~ASTVisitor();
 
     virtual void visit(FunctionDefNode *node) = 0;
+    virtual void visit(FunctionCallNode *node) = 0;
     virtual void visit(BlockNode *node) = 0;
     virtual void visit(ReturnNode *node) = 0;
     virtual void visit(VarDeclNode *node) = 0;

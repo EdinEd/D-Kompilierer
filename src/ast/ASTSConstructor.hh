@@ -11,6 +11,7 @@ public:
     
     void visit(UnitNode* rootNode) override;
     void visit(FunctionDefNode* node)override;
+    void visit(FunctionCallNode* node) override;
     void visit(BlockNode* node) override;
     void visit(ReturnNode* node) override;
     void visit(VarDeclNode* node) override;

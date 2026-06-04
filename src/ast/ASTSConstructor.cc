@@ -24,6 +24,15 @@ void ASTSConstructor::visit(FunctionDefNode *node)
     }
 }
 
+void ASTSConstructor::visit(FunctionCallNode* node)
+{
+    // TODO: Überarbeiten
+    for (const auto &param : node->params)
+    {
+        param->accept(*this);
+    }
+}
+
 void ASTSConstructor::visit(BlockNode *node)
 {
     auto newTable = std::make_unique<Symboltable>(symbolTableStack.top());

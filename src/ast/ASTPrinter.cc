@@ -110,6 +110,13 @@ void ASTPrinter::visit(FunctionDefNode *node)
     }
 }
 
+void ASTPrinter::visit(FunctionCallNode *node)
+{
+    printIndent();
+    std::cout << "| FUNKTION_CALL: " << node->function_name << std::endl;
+    // TODO: Parameter ausgeben
+}
+
 void ASTPrinter::visit(BlockNode *node)
 {
     printIndent();

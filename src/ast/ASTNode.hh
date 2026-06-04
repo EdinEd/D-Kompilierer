@@ -109,6 +109,16 @@ public:
     void accept(ASTVisitor &visitor) override;
 };
 
+class FunctionCallNode : public ASTNode
+{
+public:    
+    std::string function_name;
+    std::vector<std::unique_ptr<ASTNode>> params;
+    FunctionCallNode(SourceLocation loc, const std::string &name, std::vector<std::unique_ptr<ASTNode>> params = {})
+        : ASTNode(loc, ASTNodeType::FUNCTION_CALL), function_name(name), params(std::move(params)) {}
+    void accept(ASTVisitor &visitor) override;
+};
+
 class UnitNode : public ASTNode
 {
 public:

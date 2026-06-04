@@ -28,5 +28,6 @@ enum class ASTNodeType
     RETURN,
     BLOCK,
     FUNCTION_DEF,
+    FUNCTION_CALL,
     UNIT
 };
