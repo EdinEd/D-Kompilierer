@@ -25,4 +25,8 @@ private:
     std::shared_ptr<Symboltable> rootSymbolTable;
     std::stack<Symboltable*> symbolTableStack;   
     const FunctionSymboltable& functionTable;   
+
+    bool addFunctionParametersToTable(const FunctionDefNode &node, Symboltable &symbolTable);
+    bool functionBodyMode = false;
+    Symboltable* constructNewSymbolTable();
 };

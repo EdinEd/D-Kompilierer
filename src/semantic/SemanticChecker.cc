@@ -13,15 +13,42 @@ void SemanticChecker::visit(UnitNode *rootNode)
 
 void SemanticChecker::visit(FunctionDefNode *node)
 {
-    IdentifierInfo funcInfo{node->location, node->return_type};
-    if (!symbolTableStack.top()->insert(node->name, funcInfo))
-    {
-        std::cerr << "Error: Function '" << node->name << "' already defined at " << node->location << std::endl;
-    }
+    constructNewSymbolTable();
+    addFunctionParametersToTable(*node, *symbolTableStack.top());
+    functionBodyMode = true;
+
     if (node->body)
     {
         node->body->accept(*this);
     }
+
+    symbolTableStack.pop();
+}
+
+Symboltable *SemanticChecker::constructNewSymbolTable()
+{
+    auto newTable = std::make_unique<Symboltable>(symbolTableStack.top());
+    Symboltable *childPtr = newTable.get();
+    symbolTableStack.top()->addChild(std::move(newTable));
+    symbolTableStack.push(childPtr);
+    return childPtr;
+}
+
+bool SemanticChecker::addFunctionParametersToTable(const FunctionDefNode &node, Symboltable &symbolTable)
+{
+    IdentifierInfo paramInfo;
+    bool errorOccured = false;
+    for (const auto &param : node.parameters)
+    {
+        paramInfo = {node.location, param.type};
+        if (!symbolTable.insert(param.identifier, paramInfo))
+        {
+            auto declInfo = symbolTable.identify(param.identifier);
+            std::cerr << "Error: Parameter '" << param.identifier << "' already defined at " << declInfo->location << std::endl;
+            errorOccured = true;
+        }
+    }
+    return !errorOccured;
 }
 
 void SemanticChecker::visit(FunctionCallNode *node)
@@ -35,15 +62,22 @@ void SemanticChecker::visit(FunctionCallNode *node)
 
 void SemanticChecker::visit(BlockNode *node)
 {
-    auto newTable = std::make_unique<Symboltable>(symbolTableStack.top());
-    Symboltable *childPtr = newTable.get();
-    symbolTableStack.top()->addChild(std::move(newTable));
-    symbolTableStack.push(childPtr);
+    const bool isFunctionBody = functionBodyMode;
+    if (!isFunctionBody)
+    {
+        constructNewSymbolTable();
+    }
+    functionBodyMode = false;
+
     for (const auto &stmt : node->statements)
     {
         stmt->accept(*this);
     }
-    symbolTableStack.pop();
+
+    if (!isFunctionBody)
+    {
+        symbolTableStack.pop();
+    }
 }
 
 void SemanticChecker::visit(ReturnNode *node)
