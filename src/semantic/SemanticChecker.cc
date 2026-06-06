@@ -29,12 +29,25 @@ void SemanticChecker::visit(FunctionDefNode *node)
     constructNewSymbolTable();
     addFunctionParametersToTable(*node, *symbolTableStack.top());
     functionBodyMode = true;
+    functionReturnType = node->return_type;
 
     if (node->body)
     {
         node->body->accept(*this);
     }
 
+    if (functionReturnType == Type::VOID && functionBodyHasReturn)
+    {
+        errors.push_back({"Error: Void function should not return a value", node->location});
+    }
+    else if (functionReturnType != Type::VOID && !functionBodyHasReturn)
+    {
+        errors.push_back({"Error: Non-void function should have a return statement", node->location});
+    }
+
+    // check if return type matches function signature
+    functionBodyMode = false;
+    functionBodyHasReturn = false;
     symbolTableStack.pop();
 }
 
@@ -82,7 +95,7 @@ void SemanticChecker::visit(FunctionCallNode *node)
     {
         node->params[i]->accept(*this);
         const Type arg_type = current_exp_type;
-        
+
         if (arg_type != funcSignature->parameterTypes[i])
         {
             errors.push_back({"Error: Argument type mismatch for parameter " + std::to_string(i + 1) + " in function '" + node->function_name + "'", node->location});
@@ -95,21 +108,34 @@ void SemanticChecker::visit(FunctionCallNode *node)
 void SemanticChecker::visit(BlockNode *node)
 {
     const bool isFunctionBody = functionBodyMode;
+    functionBodyMode = false;
     if (!isFunctionBody)
     {
         constructNewSymbolTable();
     }
-    functionBodyMode = false;
+    
 
     for (const auto &stmt : node->statements)
     {
         stmt->accept(*this);
+        if (isFunctionBody && stmt->node_type == ASTNodeType::RETURN)
+        {
+            functionBodyHasReturn = true;
+        }
+        if (stmt->node_type == ASTNodeType::RETURN)
+        {
+            if (current_exp_type != functionReturnType)
+            {
+                errors.push_back({"Error: Return type mismatch in function body", stmt->location});
+            }
+        }
     }
 
     if (!isFunctionBody)
     {
         symbolTableStack.pop();
     }
+    
 }
 
 void SemanticChecker::visit(ReturnNode *node)

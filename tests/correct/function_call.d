@@ -1,4 +1,4 @@
-funk main(){
+funk main() -> zahl{
     test(2, "hallo");
     zurück 1;
 }

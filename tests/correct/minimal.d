@@ -1,4 +1,4 @@
 
-funk main() -> leer{
+funk main() -> zahl{
     zurück 5;
 }

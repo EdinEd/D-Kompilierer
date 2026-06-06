@@ -37,6 +37,9 @@ private:
 
     bool addFunctionParametersToTable(const FunctionDefNode &node, Symboltable &symbolTable);
     bool functionBodyMode = false;
+    bool functionBodyHasReturn = false;
+    Type functionReturnType;
+
     Symboltable* constructNewSymbolTable();
 
     Type current_exp_type;
