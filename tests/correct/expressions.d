@@ -6,5 +6,10 @@ funk main(){
     zahl divide = a / 2;
     zahl modulo = a % 2;
     zahl complex = (a+2)*2-(a%2 * 3);
-    zurück a % 2;
+    zahl add_with_funk = a + add(1,2);
+    zurück a;
+}
+
+funk add(zahl a, zahl b) -> zahl{
+    zurück a + b;
 }

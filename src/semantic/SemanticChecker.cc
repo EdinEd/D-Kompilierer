@@ -57,7 +57,7 @@ bool SemanticChecker::addFunctionParametersToTable(const FunctionDefNode &node, 
         if (!symbolTable.insert(param.identifier, paramInfo))
         {
             auto declInfo = symbolTable.identify(param.identifier);
-            std::cerr << "Error: Parameter '" << param.identifier << "' already defined at " << declInfo->location << std::endl;
+            errors.push_back({"Error: Parameter '" + param.identifier + "' already defined", declInfo->location});
             errorOccured = true;
         }
     }
@@ -66,23 +66,30 @@ bool SemanticChecker::addFunctionParametersToTable(const FunctionDefNode &node, 
 
 void SemanticChecker::visit(FunctionCallNode *node)
 {
-    // Check if function is defined
     auto funcSignature = functionTable.identify(node->function_name);
     if (!funcSignature)
     {
-        std::cerr << "Error: Function '" << node->function_name << "' not defined at " << node->location << std::endl;
+        errors.push_back({"Error: Function '" + node->function_name + "' not defined", node->location});
         return;
     }
     if (funcSignature->parameterTypes.size() != node->params.size())
     {
-        std::cerr << "Error: Function '" << node->function_name << "' called with incorrect number of arguments at " << node->location << std::endl;
+        errors.push_back({"Error: Function '" + node->function_name + "' called with incorrect number of arguments", node->location});
         return;
     }
 
-    for (const auto &param : node->params)
+    for (int i = 0; i < node->params.size(); ++i)
     {
-        param->accept(*this);
+        node->params[i]->accept(*this);
+        const Type arg_type = current_exp_type;
+        
+        if (arg_type != funcSignature->parameterTypes[i])
+        {
+            errors.push_back({"Error: Argument type mismatch for parameter " + std::to_string(i + 1) + " in function '" + node->function_name + "'", node->location});
+            return;
+        }
     }
+    current_exp_type = funcSignature->returnType;
 }
 
 void SemanticChecker::visit(BlockNode *node)
