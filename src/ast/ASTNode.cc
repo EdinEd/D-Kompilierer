@@ -1,47 +1,51 @@
 #include "ASTNode.hh"
 
-
-void NumberNode::accept(ASTVisitor& visitor)
+void NumberNode::accept(ASTVisitor &visitor)
 {
     visitor.visit(this);
 }
 
-void StringNode::accept(ASTVisitor& visitor)
+void StringNode::accept(ASTVisitor &visitor)
 {
     visitor.visit(this);
 }
 
-void VarRefNode::accept(ASTVisitor& visitor)
+void VarRefNode::accept(ASTVisitor &visitor)
 {
     visitor.visit(this);
 }
 
-void BinaryOpNode::accept(ASTVisitor& visitor)
+void BinaryOpNode::accept(ASTVisitor &visitor)
 {
     visitor.visit(this);
 }
 
-void VarDeclNode::accept(ASTVisitor& visitor)
+void VarDeclNode::accept(ASTVisitor &visitor)
 {
     visitor.visit(this);
 }
 
-void ReturnNode::accept(ASTVisitor& visitor)
+void ReturnNode::accept(ASTVisitor &visitor)
 {
     visitor.visit(this);
 }
 
-void BlockNode::accept(ASTVisitor& visitor)
+void BlockNode::accept(ASTVisitor &visitor)
 {
     visitor.visit(this);
 }
 
-void FunctionDefNode::accept(ASTVisitor& visitor)
+void FunctionDefNode::accept(ASTVisitor &visitor)
 {
     visitor.visit(this);
 }
 
-void UnitNode::accept(ASTVisitor& visitor)
+void FunctionCallNode::accept(ASTVisitor &visitor)
+{
+    visitor.visit(this);
+}
+
+void UnitNode::accept(ASTVisitor &visitor)
 {
     visitor.visit(this);
 }

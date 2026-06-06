@@ -11,16 +11,10 @@
   # include <string>
   #include <vector>
   #include <memory>
+  #include "../ast/ASTNode.hh"
+  #include "../common/SourceLocation.hh"
+  #include "../common/Types.hh"
   class Driver;
-  class ASTNode;
-  class BlockNode;
-  class FunctionDefNode;
-  class UnitNode;
-  class VarDeclNode;
-  class ReturnNode;
-  class NumberNode;
-  class StringNode;
-  class BinaryOpNode;
   enum class Type;
   enum class OperationType;
 }
@@ -35,9 +29,7 @@
 
 %code {
   #include "Driver.hh"
-  #include "../common/SourceLocation.hh"
-  #include "../common/Types.hh"
-  #include "../ast/ASTNode.hh"
+  
 
   inline SourceLocation toASTLoc(const yy::location& l) {
       return SourceLocation(
@@ -69,6 +61,7 @@
   MINUS "-"
   SLASH "/"
   PERCENT "%"
+  COMMA ","
 ;
 
 %token <std::string> IDENTIFIER "identifier"
@@ -85,6 +78,12 @@
 %nterm <std::unique_ptr<VarDeclNode>> var_decl;
 %nterm <std::unique_ptr<ReturnNode>> return_statement;
 %nterm <std::unique_ptr<BinaryOpNode>> var_assign;
+%nterm <FunctionParameter> param;
+%nterm <std::vector<FunctionParameter>> param_list params;
+%nterm <std::unique_ptr<FunctionCallNode>> func_call;
+%nterm <std::vector<std::unique_ptr<ASTNode>>> expr_list exprs;
+
+
 
 %printer { yyo << $$; } <int> <std::string>;
 %printer { yyo << "[AST Node]"; } <std::unique_ptr<ASTNode>> <std::unique_ptr<BlockNode>> <std::unique_ptr<UnitNode>> <std::unique_ptr<FunctionDefNode>> <Type>; 
@@ -104,9 +103,20 @@ functions:
 | functions function     {$1->addFunction(std::move($2)); $$ = std::move($1);};
 
 function:
-  FUNK IDENTIFIER LPAREN RPAREN ARROW function_type body{ $$ = std::make_unique<FunctionDefNode>(toASTLoc(@$), $6, $2, std::move($7)); }
-  | FUNK IDENTIFIER LPAREN RPAREN body { $$ = std::make_unique<FunctionDefNode>(toASTLoc(@$), Type::VOID, $2, std::move($5)); }
+  FUNK IDENTIFIER LPAREN param_list RPAREN ARROW function_type body{ $$ = std::make_unique<FunctionDefNode>(toASTLoc(@$), $7, $2, std::move($8), std::move($4)); }
+  | FUNK IDENTIFIER LPAREN param_list RPAREN body { $$ = std::make_unique<FunctionDefNode>(toASTLoc(@$), Type::VOID, $2, std::move($6), std::move($4)); }
   | error RPAREN{ yyerrok; };
+
+param:
+  variable_type IDENTIFIER { $$ = FunctionParameter{ $1, $2 }; };
+
+params:
+  param { $$ = std::vector<FunctionParameter>{ $1 }; }
+  | params COMMA param { $1.push_back($3); $$ = std::move($1); };
+
+param_list:
+  %empty { $$ = std::vector<FunctionParameter>{}; }
+  | params { $$ = std::move($1); };
 
 function_type:
   TYPE_VOID { $$ = Type::VOID; }
@@ -127,12 +137,21 @@ expr:
   NUMBER { $$ = std::make_unique<NumberNode>(toASTLoc(@$), $1); }
   | STRING { $$ = std::make_unique<StringNode>(toASTLoc(@$), $1); }
   | IDENTIFIER { $$ = std::make_unique<VarRefNode>(toASTLoc(@$), $1); }
+  | func_call { $$ = std::move($1); }
   | expr PLUS expr { $$ = std::make_unique<BinaryOpNode>(toASTLoc(@$), OperationType::ADD, std::move($1), std::move($3)); }
   | expr MINUS expr { $$ = std::make_unique<BinaryOpNode>(toASTLoc(@$), OperationType::SUBTRACT, std::move($1), std::move($3)); }
   | expr STAR expr { $$ = std::make_unique<BinaryOpNode>(toASTLoc(@$), OperationType::MULTIPLY, std::move($1), std::move($3)); }
   | expr SLASH expr { $$ = std::make_unique<BinaryOpNode>(toASTLoc(@$), OperationType::DIVIDE, std::move($1), std::move($3)); }
   | expr PERCENT expr { $$ = std::make_unique<BinaryOpNode>(toASTLoc(@$), OperationType::MODULO, std::move($1), std::move($3)); }
   | LPAREN expr RPAREN { $$ = std::move($2); };
+
+expr_list:
+  %empty { $$ = std::vector<std::unique_ptr<ASTNode>>{}; }
+| exprs { $$ = std::move($1); };
+
+exprs:
+  expr { std::vector<std::unique_ptr<ASTNode>> list; list.push_back(std::move($1)); $$ = std::move(list);}
+| exprs COMMA expr { $1.push_back(std::move($3)); $$ = std::move($1);};
 
 body:
   LBRACE contents RBRACE { $$ = std::move($2); };
@@ -146,7 +165,11 @@ content_item:
 | var_decl                {$$ = std::move($1);}
 | body                    {$$ = std::move($1);}
 | var_assign              {$$ = std::move($1);}
-| error SEMICOLON         {yyerrok;}
+| func_call SEMICOLON     {$$ = std::move($1);}
+| error SEMICOLON         {yyerrok;};
+
+func_call:
+  IDENTIFIER LPAREN expr_list RPAREN {$$ = std::make_unique<FunctionCallNode>(toASTLoc(@$), $1, std::move($3)); };
 
 return_statement:
   RETURN expr SEMICOLON { $$ = std::make_unique<ReturnNode>(toASTLoc(@$), std::move($2)); }

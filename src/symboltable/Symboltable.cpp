@@ -2,7 +2,7 @@
 // Created by Edwin Edich on 03.05.26.
 //
 
-#include "Symboltable.h"
+#include "Symboltable.hh"
 
 IdentifierInfo *Symboltable::identify(const std::string &identifierName)
 {
