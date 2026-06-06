@@ -36,6 +36,7 @@ private:
     bool functionBodyMode = false;
     bool functionBodyHasReturn = false;
     Type functionReturnType;
+    SourceLocation currentFunctionLocation;
 
     Symboltable* constructNewSymbolTable();
 
@@ -45,5 +46,5 @@ private:
     void validateFuncDeclCorrectness(const Type& returnType, const bool& hasReturn);
     bool validateFuncSignature(const FunctionCallNode* node, const FunctionSignature* funcSignature = nullptr);
 
-    std::vector<SemanticError> errors;
+    std::vector<std::unique_ptr<SemanticException>> errors;
 };

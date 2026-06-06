@@ -9,7 +9,7 @@ void SemanticChecker::printErrors() const
 {
     for (const auto &error : errors)
     {
-        std::cerr << error.message << " at " << error.location << std::endl;
+        std::cerr << error->format() << std::endl;
     }
 }
 
@@ -30,6 +30,7 @@ void SemanticChecker::visit(FunctionDefNode *node)
     addFunctionParametersToTable(*node, *symbolTableStack.top());
     functionBodyMode = true;
     functionReturnType = node->return_type;
+    currentFunctionLocation = node->location;
 
     if (node->body)
     {
@@ -43,15 +44,17 @@ void SemanticChecker::visit(FunctionDefNode *node)
     symbolTableStack.pop();
 }
 
-void SemanticChecker::validateFuncDeclCorrectness(const Type& returnType, const bool& hasReturn)
+void SemanticChecker::validateFuncDeclCorrectness(const Type &returnType, const bool &hasReturn)
 {
     if (returnType == Type::VOID && hasReturn)
     {
-        errors.push_back({"Error: Void function should not return a value"});
+        errors.push_back(std::make_unique<GenericSemanticError>(
+            "Void function should not return a value", currentFunctionLocation));
     }
     else if (returnType != Type::VOID && !hasReturn)
     {
-        errors.push_back({"Error: Non-void function should have a return statement"});
+        errors.push_back(std::make_unique<GenericSemanticError>(
+            "Non-void function should have a return statement", currentFunctionLocation));
     }
 }
 
@@ -74,7 +77,8 @@ bool SemanticChecker::addFunctionParametersToTable(const FunctionDefNode &node, 
         if (!symbolTable.insert(param.identifier, paramInfo))
         {
             auto declInfo = symbolTable.identify(param.identifier);
-            errors.push_back({"Error: Parameter '" + param.identifier + "' already defined", declInfo->location});
+            errors.push_back(std::make_unique<AlreadyDefinedError>(
+                param.identifier, "Parameter", declInfo->location, node.location));
             errorOccured = true;
         }
     }
@@ -97,7 +101,9 @@ void SemanticChecker::visit(FunctionCallNode *node)
 
         if (arg_type != funcSignature->parameterTypes[i])
         {
-            errors.push_back({"Error: Argument type mismatch for parameter " + std::to_string(i + 1) + " in function '" + node->function_name + "'", node->location});
+            errors.push_back(std::make_unique<ArgumentTypeMismatchError>(
+                funcSignature->parameterTypes[i], arg_type,
+                node->function_name, i + 1, node->location));
             current_exp_type = Type::INVALID;
             return;
         }
@@ -105,15 +111,19 @@ void SemanticChecker::visit(FunctionCallNode *node)
     current_exp_type = funcSignature->returnType;
 }
 
-bool SemanticChecker::validateFuncSignature(const FunctionCallNode* node, const FunctionSignature* funcSignature){
+bool SemanticChecker::validateFuncSignature(const FunctionCallNode *node, const FunctionSignature *funcSignature)
+{
     if (!funcSignature)
     {
-        errors.push_back({"Error: Function '" + node->function_name + "' not defined", node->location});
+        errors.push_back(std::make_unique<UndefinedError>(
+            node->function_name, "function", node->location));
         return false;
     }
     if (funcSignature->parameterTypes.size() != node->params.size())
     {
-        errors.push_back({"Error: Function '" + node->function_name + "' called with incorrect number of arguments", node->location});
+        errors.push_back(std::make_unique<WrongArgumentCountError>(
+            node->function_name, funcSignature->parameterTypes.size(),
+            node->params.size(), node->location));
         return false;
     }
     return true;
@@ -127,7 +137,6 @@ void SemanticChecker::visit(BlockNode *node)
     {
         constructNewSymbolTable();
     }
-    
 
     for (const auto &stmt : node->statements)
     {
@@ -140,7 +149,8 @@ void SemanticChecker::visit(BlockNode *node)
         {
             if (current_exp_type != functionReturnType)
             {
-                errors.push_back({"Error: Return type mismatch in function body", stmt->location});
+                errors.push_back(std::make_unique<TypeMismatchError>(
+                    functionReturnType, current_exp_type, ASTNodeType::RETURN, stmt->location));
             }
         }
     }
@@ -149,7 +159,6 @@ void SemanticChecker::visit(BlockNode *node)
     {
         symbolTableStack.pop();
     }
-    
 }
 
 void SemanticChecker::visit(ReturnNode *node)
@@ -166,7 +175,8 @@ void SemanticChecker::visit(VarDeclNode *node)
     if (!symbolTableStack.top()->insert(node->name, varInfo))
     {
         auto declInfo = symbolTableStack.top()->identify(node->name);
-        errors.push_back({"Error: Variable '" + node->name + "' already defined", declInfo->location});
+        errors.push_back(std::make_unique<AlreadyDefinedError>(
+            node->name, "variable", declInfo->location, node->location));
         return;
     }
     if (node->init_value)
@@ -197,7 +207,8 @@ void SemanticChecker::visit(BinaryOpNode *node)
         validateBinaryOpTypes(node->location, left_exp_type, right_exp_type);
         break;
     default:
-        errors.push_back({"Error: Unknown binary operator", node->location});
+        errors.push_back(std::make_unique<GenericSemanticError>(
+            "Unknown binary operator", node->location));
         current_exp_type = Type::INVALID;
         break;
     }
@@ -211,7 +222,8 @@ void SemanticChecker::validateBinaryOpTypes(const SourceLocation &location, cons
     }
     else if (leftType != rightType)
     {
-        errors.push_back({"Error: Type mismatch in binary operation", location});
+        errors.push_back(std::make_unique<TypeMismatchError>(
+            leftType, rightType, ASTNodeType::BINARY_OP, location));
         current_exp_type = Type::INVALID;
     }
     else
@@ -224,7 +236,8 @@ void SemanticChecker::validateBinaryOpCalcTypes(const SourceLocation &location, 
 {
     if (leftType != Type::INTEGER)
     {
-        errors.push_back({"Error: Binary operator requires integer operands", location});
+        errors.push_back(std::make_unique<GenericSemanticError>(
+            "Binary operator requires integer operands", location));
         current_exp_type = Type::INVALID;
     }
     validateBinaryOpTypes(location, leftType, rightType);
@@ -235,7 +248,8 @@ void SemanticChecker::visit(VarRefNode *node)
     IdentifierInfo *info = symbolTableStack.top()->identify(node->name);
     if (!info)
     {
-        errors.push_back({"Error: Variable '" + node->name + "' not defined", node->location});
+        errors.push_back(std::make_unique<UndefinedError>(
+            node->name, "variable", node->location));
         current_exp_type = Type::INVALID;
         return;
     }
