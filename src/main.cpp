@@ -4,7 +4,6 @@
 #include "ASTPrinter.hh"
 #include "semantic/SemanticChecker.hh"
 #include "symboltable/SymboltablePrinter.hh"
-#include "symboltable/FunctionSymboltable.hh"
 #include "semantic/GlobalDeclPass.hh"
 #include "manual/parser/MParser.hh"
 #include <memory>
@@ -19,11 +18,10 @@ void printAST(UnitNode *rootNode)
 std::shared_ptr<GlobalDeclPass> checkGlobalDeclarations(UnitNode *rootNode)
 {
     std::cout << "==== CHECKING GLOBAL DECLARATIONS ====" << std::endl;
-    FunctionSymboltable functionTable;
-    auto globalDeclPass = std::make_shared<GlobalDeclPass>(functionTable);
+    auto globalDeclPass = std::make_shared<GlobalDeclPass>();
     globalDeclPass->visit(rootNode);
     std::cout << "==== PRINTING FUNCTION SYMBOLTABLE ====" << std::endl;
-    for (const auto &entry : functionTable.getTable())
+    for (const auto &entry : globalDeclPass->getFunctionTable().getTable())
     {
         std::cout << entry.first << " : " << toString(entry.second.returnType) << " (defined at " << entry.second.location << ")" << std::endl;
         std::cout << "  Parameters:" << std::endl;

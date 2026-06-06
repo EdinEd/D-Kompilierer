@@ -1,12 +1,11 @@
 #pragma once
 #include "../symboltable/FunctionSymboltable.hh"
 #include "../ast/ASTNode.hh"
-
+#include <memory>
 class GlobalDeclPass : public ASTVisitor
 {
 public:
-    GlobalDeclPass(FunctionSymboltable &functionTable)
-        : functionTable(functionTable) {}
+    GlobalDeclPass() = default;
     void visit(UnitNode *rootNode) override;
     const FunctionSymboltable &getFunctionTable() const
     {
@@ -14,7 +13,7 @@ public:
     }
 
 private:
-    FunctionSymboltable &functionTable;
+    FunctionSymboltable functionTable;
 
     void visit(FunctionDefNode *node) override;
     void visit(FunctionCallNode *node) override {};

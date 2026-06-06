@@ -4,7 +4,7 @@
 #include "../ast/ASTNode.hh"
 #include "../symboltable/FunctionSymboltable.hh"
 #include <stack>
-
+#include <memory>
 class SemanticChecker : public ASTVisitor {
 public:
     SemanticChecker(const FunctionSymboltable& functionTable) : functionTable(functionTable) {}
