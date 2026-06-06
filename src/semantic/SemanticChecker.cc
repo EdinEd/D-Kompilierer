@@ -53,7 +53,18 @@ bool SemanticChecker::addFunctionParametersToTable(const FunctionDefNode &node, 
 
 void SemanticChecker::visit(FunctionCallNode *node)
 {
-    // TODO: Überarbeiten
+    // Check if function is defined
+    auto funcSignature = functionTable.identify(node->function_name);
+    if (!funcSignature)    {
+        std::cerr << "Error: Function '" << node->function_name << "' not defined at " << node->location << std::endl;
+        return;
+    }
+    if(funcSignature->parameterTypes.size() != node->params.size())
+    {
+        std::cerr << "Error: Function '" << node->function_name << "' called with incorrect number of arguments at " << node->location << std::endl;
+        return;
+    }
+
     for (const auto &param : node->params)
     {
         param->accept(*this);

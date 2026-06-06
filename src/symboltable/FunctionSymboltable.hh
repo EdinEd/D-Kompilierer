@@ -19,7 +19,7 @@ class FunctionSymboltable
 {
 public:
     FunctionSymboltable() = default;
-    FunctionSignature *identify(const std::string &identifierName);
+    const FunctionSignature *identify(const std::string &identifierName) const;
     bool insert(const std::string &identifierName, FunctionSignature signature);
     const std::unordered_map<std::string, FunctionSignature> &getTable() const;
 

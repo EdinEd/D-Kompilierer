@@ -1,6 +1,6 @@
 #include "FunctionSymboltable.hh"
 
-FunctionSignature *FunctionSymboltable::identify(const std::string &identifierName)
+const FunctionSignature *FunctionSymboltable::identify(const std::string &identifierName) const
 {
     auto it = table.find(identifierName);
 

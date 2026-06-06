@@ -16,12 +16,12 @@ void printAST(UnitNode *rootNode)
     printer.visit(rootNode);
 }
 
-GlobalDeclPass checkGlobalDeclarations(UnitNode *rootNode)
+std::shared_ptr<GlobalDeclPass> checkGlobalDeclarations(UnitNode *rootNode)
 {
     std::cout << "==== CHECKING GLOBAL DECLARATIONS ====" << std::endl;
     FunctionSymboltable functionTable;
-    GlobalDeclPass globalDeclPass(functionTable);
-    globalDeclPass.visit(rootNode);
+    auto globalDeclPass = std::make_shared<GlobalDeclPass>(functionTable);
+    globalDeclPass->visit(rootNode);
     std::cout << "==== PRINTING FUNCTION SYMBOLTABLE ====" << std::endl;
     for (const auto &entry : functionTable.getTable())
     {
@@ -39,7 +39,7 @@ std::shared_ptr<Symboltable> constructSymbolTable(UnitNode *rootNode)
 {
     auto globalDeclPass = checkGlobalDeclarations(rootNode);
     std::cout << "==== CONSTRUCTING SYMBOLTABLE ====" << std::endl;
-    SemanticChecker visitor(globalDeclPass.getFunctionTable());
+    SemanticChecker visitor(globalDeclPass->getFunctionTable());
     visitor.visit(rootNode);
     return visitor.getCurrentVariableSymbolTable();
 }
