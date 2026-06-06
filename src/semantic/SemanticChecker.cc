@@ -1,5 +1,18 @@
 #include "SemanticChecker.hh"
 
+bool SemanticChecker::hasErrors() const
+{
+    return !errors.empty();
+}
+
+void SemanticChecker::printErrors() const
+{
+    for (const auto &error : errors)
+    {
+        std::cerr << error.message << " at " << error.location << std::endl;
+    }
+}
+
 void SemanticChecker::visit(UnitNode *rootNode)
 {
     rootSymbolTable = std::make_shared<Symboltable>();
@@ -106,7 +119,7 @@ void SemanticChecker::visit(VarDeclNode *node)
     if (!symbolTableStack.top()->insert(node->name, varInfo))
     {
         auto declInfo = symbolTableStack.top()->identify(node->name);
-        std::cerr << "Error: Variable '" << node->name << "' already defined at " << declInfo->location << std::endl;
+        errors.push_back({"Error: Variable '" + node->name + "' already defined", declInfo->location});
         return;
     }
     if (node->init_value)
@@ -137,7 +150,7 @@ void SemanticChecker::visit(BinaryOpNode *node)
         validateBinaryOpTypes(node->location, left_exp_type, right_exp_type);
         break;
     default:
-        std::cerr << "Error: Unknown binary operator at " << node->location << std::endl;
+        errors.push_back({"Error: Unknown binary operator", node->location});
         current_exp_type = Type::INVALID;
         break;
     }
@@ -151,7 +164,7 @@ void SemanticChecker::validateBinaryOpTypes(const SourceLocation &location, cons
     }
     else if (leftType != rightType)
     {
-        std::cerr << "Error: Type mismatch in binary operation at " << location << std::endl;
+        errors.push_back({"Error: Type mismatch in binary operation", location});
         current_exp_type = Type::INVALID;
     }
     else
@@ -164,7 +177,7 @@ void SemanticChecker::validateBinaryOpCalcTypes(const SourceLocation &location, 
 {
     if (leftType != Type::INTEGER)
     {
-        std::cerr << "Error: Binary operator requires integer operands at " << location << std::endl;
+        errors.push_back({"Error: Binary operator requires integer operands", location});
         current_exp_type = Type::INVALID;
     }
     validateBinaryOpTypes(location, leftType, rightType);
@@ -175,7 +188,7 @@ void SemanticChecker::visit(VarRefNode *node)
     IdentifierInfo *info = symbolTableStack.top()->identify(node->name);
     if (!info)
     {
-        std::cerr << "Error: Variable '" << node->name << "' not defined at " << node->location << std::endl;
+        errors.push_back({"Error: Variable '" + node->name + "' not defined", node->location});
         current_exp_type = Type::INVALID;
         return;
     }

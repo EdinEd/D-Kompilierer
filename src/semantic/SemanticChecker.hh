@@ -4,11 +4,20 @@
 #include "../ast/ASTNode.hh"
 #include "../symboltable/FunctionSymboltable.hh"
 #include <stack>
+#include <vector>
 #include <memory>
+
+struct SemanticError
+{
+    std::string message;
+    SourceLocation location;
+};
 class SemanticChecker : public ASTVisitor {
 public:
     SemanticChecker(const FunctionSymboltable& functionTable) : functionTable(functionTable) {}
     std::shared_ptr<Symboltable> getCurrentVariableSymbolTable();
+    bool hasErrors() const;
+    void printErrors() const;
     
     void visit(UnitNode* rootNode) override;
     void visit(FunctionDefNode* node)override;
@@ -34,5 +43,5 @@ private:
     void validateBinaryOpCalcTypes(const SourceLocation &location, const Type& leftType, const Type& rightType);
     void validateBinaryOpTypes(const SourceLocation &location, const Type& leftType, const Type& rightType);
 
-    
+    std::vector<SemanticError> errors;
 };
