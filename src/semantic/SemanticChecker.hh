@@ -3,15 +3,12 @@
 #include "../symboltable/Symboltable.hh"
 #include "../ast/ASTNode.hh"
 #include "../symboltable/FunctionSymboltable.hh"
+#include "SemanticExceptions.hh"
 #include <stack>
 #include <vector>
 #include <memory>
 
-struct SemanticError
-{
-    std::string message;
-    SourceLocation location;
-};
+
 class SemanticChecker : public ASTVisitor {
 public:
     SemanticChecker(const FunctionSymboltable& functionTable) : functionTable(functionTable) {}
@@ -45,6 +42,8 @@ private:
     Type current_exp_type;
     void validateBinaryOpCalcTypes(const SourceLocation &location, const Type& leftType, const Type& rightType);
     void validateBinaryOpTypes(const SourceLocation &location, const Type& leftType, const Type& rightType);
+    void validateFuncDeclCorrectness(const Type& returnType, const bool& hasReturn);
+    bool validateFuncSignature(const FunctionCallNode* node, const FunctionSignature* funcSignature = nullptr);
 
     std::vector<SemanticError> errors;
 };

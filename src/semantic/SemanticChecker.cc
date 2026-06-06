@@ -36,19 +36,23 @@ void SemanticChecker::visit(FunctionDefNode *node)
         node->body->accept(*this);
     }
 
-    if (functionReturnType == Type::VOID && functionBodyHasReturn)
-    {
-        errors.push_back({"Error: Void function should not return a value", node->location});
-    }
-    else if (functionReturnType != Type::VOID && !functionBodyHasReturn)
-    {
-        errors.push_back({"Error: Non-void function should have a return statement", node->location});
-    }
+    validateFuncDeclCorrectness(functionReturnType, functionBodyHasReturn);
 
-    // check if return type matches function signature
     functionBodyMode = false;
     functionBodyHasReturn = false;
     symbolTableStack.pop();
+}
+
+void SemanticChecker::validateFuncDeclCorrectness(const Type& returnType, const bool& hasReturn)
+{
+    if (returnType == Type::VOID && hasReturn)
+    {
+        errors.push_back({"Error: Void function should not return a value"});
+    }
+    else if (returnType != Type::VOID && !hasReturn)
+    {
+        errors.push_back({"Error: Non-void function should have a return statement"});
+    }
 }
 
 Symboltable *SemanticChecker::constructNewSymbolTable()
@@ -80,14 +84,9 @@ bool SemanticChecker::addFunctionParametersToTable(const FunctionDefNode &node, 
 void SemanticChecker::visit(FunctionCallNode *node)
 {
     auto funcSignature = functionTable.identify(node->function_name);
-    if (!funcSignature)
+    if (!validateFuncSignature(node, funcSignature))
     {
-        errors.push_back({"Error: Function '" + node->function_name + "' not defined", node->location});
-        return;
-    }
-    if (funcSignature->parameterTypes.size() != node->params.size())
-    {
-        errors.push_back({"Error: Function '" + node->function_name + "' called with incorrect number of arguments", node->location});
+        current_exp_type = Type::INVALID;
         return;
     }
 
@@ -99,10 +98,25 @@ void SemanticChecker::visit(FunctionCallNode *node)
         if (arg_type != funcSignature->parameterTypes[i])
         {
             errors.push_back({"Error: Argument type mismatch for parameter " + std::to_string(i + 1) + " in function '" + node->function_name + "'", node->location});
+            current_exp_type = Type::INVALID;
             return;
         }
     }
     current_exp_type = funcSignature->returnType;
+}
+
+bool SemanticChecker::validateFuncSignature(const FunctionCallNode* node, const FunctionSignature* funcSignature){
+    if (!funcSignature)
+    {
+        errors.push_back({"Error: Function '" + node->function_name + "' not defined", node->location});
+        return false;
+    }
+    if (funcSignature->parameterTypes.size() != node->params.size())
+    {
+        errors.push_back({"Error: Function '" + node->function_name + "' called with incorrect number of arguments", node->location});
+        return false;
+    }
+    return true;
 }
 
 void SemanticChecker::visit(BlockNode *node)
