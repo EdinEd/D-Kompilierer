@@ -8,6 +8,8 @@
 #include "manual/parser/MParser.hh"
 #include <memory>
 
+bool semanticErrors = false;
+
 void printAST(UnitNode *rootNode)
 {
     std::cout << "==== PRINTING AST ====" << std::endl;
@@ -20,6 +22,8 @@ std::shared_ptr<GlobalDeclPass> checkGlobalDeclarations(UnitNode *rootNode)
     std::cout << "==== CHECKING GLOBAL DECLARATIONS ====" << std::endl;
     auto globalDeclPass = std::make_shared<GlobalDeclPass>();
     globalDeclPass->visit(rootNode);
+    semanticErrors = globalDeclPass->hasErrors();
+    globalDeclPass->printErrors();
     std::cout << "==== PRINTING FUNCTION SYMBOLTABLE ====" << std::endl;
     for (const auto &entry : globalDeclPass->getFunctionTable().getTable())
     {
@@ -39,6 +43,8 @@ std::shared_ptr<Symboltable> constructSymbolTable(UnitNode *rootNode)
     std::cout << "==== CONSTRUCTING SYMBOLTABLE ====" << std::endl;
     SemanticChecker visitor(globalDeclPass->getFunctionTable());
     visitor.visit(rootNode);
+    semanticErrors |= visitor.hasErrors();
+    visitor.printErrors();
     return visitor.getCurrentVariableSymbolTable();
 }
 
@@ -101,6 +107,11 @@ int main(int argc, char *argv[])
             std::cout << "Parsing completed with errors." << std::endl;
             if (!manual_mode)
                 std::cout << "Parsing failed with " << drv.errors.size() << " error(s)." << std::endl;
+            return 1;
+        }
+        if (semanticErrors)
+        {
+            std::cout << "Semantic analysis completed with errors." << std::endl;
             return 1;
         }
     }

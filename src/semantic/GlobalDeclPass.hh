@@ -1,7 +1,9 @@
 #pragma once
 #include "../symboltable/FunctionSymboltable.hh"
 #include "../ast/ASTNode.hh"
+#include "../semantic/SemanticExceptions.hh"
 #include <memory>
+#include <vector>
 class GlobalDeclPass : public ASTVisitor
 {
 public:
@@ -11,9 +13,12 @@ public:
     {
         return functionTable;
     }
+    bool hasErrors() const;
+    void printErrors() const;
 
 private:
     FunctionSymboltable functionTable;
+    std::vector<std::unique_ptr<SemanticException>> errors;
 
     void visit(FunctionDefNode *node) override;
     void visit(FunctionCallNode *node) override {};

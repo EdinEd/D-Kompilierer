@@ -9,5 +9,4 @@ funk zwei() -> zahl {
 }
 
 funk leer_test() {
-    zurück 0;
 }

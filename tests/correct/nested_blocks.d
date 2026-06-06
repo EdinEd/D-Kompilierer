@@ -1,5 +1,5 @@
 
-funk nested() -> leer {
+funk nested() -> zahl {
     {
         zahl x;
         {

@@ -3,12 +3,18 @@
 #include "../symboltable/Symboltable.hh"
 #include "../ast/ASTNode.hh"
 #include "../symboltable/FunctionSymboltable.hh"
+#include "SemanticExceptions.hh"
 #include <stack>
+#include <vector>
 #include <memory>
+
+
 class SemanticChecker : public ASTVisitor {
 public:
     SemanticChecker(const FunctionSymboltable& functionTable) : functionTable(functionTable) {}
     std::shared_ptr<Symboltable> getCurrentVariableSymbolTable();
+    bool hasErrors() const;
+    void printErrors() const;
     
     void visit(UnitNode* rootNode) override;
     void visit(FunctionDefNode* node)override;
@@ -28,5 +34,17 @@ private:
 
     bool addFunctionParametersToTable(const FunctionDefNode &node, Symboltable &symbolTable);
     bool functionBodyMode = false;
+    bool functionBodyHasReturn = false;
+    Type functionReturnType;
+    SourceLocation currentFunctionLocation;
+
     Symboltable* constructNewSymbolTable();
+
+    Type current_exp_type;
+    void validateBinaryOpCalcTypes(const SourceLocation &location, const Type& leftType, const Type& rightType);
+    void validateBinaryOpTypes(const SourceLocation &location, const Type& leftType, const Type& rightType);
+    void validateFuncDeclCorrectness(const Type& returnType, const bool& hasReturn);
+    bool validateFuncSignature(const FunctionCallNode* node, const FunctionSignature* funcSignature = nullptr);
+
+    std::vector<std::unique_ptr<SemanticException>> errors;
 };

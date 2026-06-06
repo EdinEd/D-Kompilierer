@@ -12,6 +12,7 @@ enum class OperationType
 
 enum class Type
 {
+    INVALID = -1 ,
     INTEGER,
     STRING,
     BOOLEAN,
@@ -44,6 +45,8 @@ inline std::string toString(Type returnType)
         return "BOOLEAN";
     case Type::VOID:
         return "VOID";
+    case Type::INVALID:
+        return "INVALID";
     default:
         return "UNKNOWN";
     }

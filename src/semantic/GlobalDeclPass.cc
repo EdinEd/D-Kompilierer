@@ -8,6 +8,19 @@ void GlobalDeclPass::visit(UnitNode *rootNode)
     }
 }
 
+bool GlobalDeclPass::hasErrors() const
+{
+    return !errors.empty();
+}
+
+void GlobalDeclPass::printErrors() const
+{
+    for (const auto &error : errors)
+    {
+        std::cerr << error->format() << std::endl;
+    }
+}
+
 void GlobalDeclPass::visit(FunctionDefNode *node)
 {
     FunctionSignature signature;
@@ -19,7 +32,7 @@ void GlobalDeclPass::visit(FunctionDefNode *node)
     }
     if (!functionTable.insert(node->name, signature))
     {
-        // TODO: Custom error class
-        std::cerr << "Error: Function '" << node->name << "' already defined at " << signature.location << std::endl;
+        errors.push_back(std::make_unique<AlreadyDefinedError>(
+            node->name, "function", signature.location, node->location));
     }
 }

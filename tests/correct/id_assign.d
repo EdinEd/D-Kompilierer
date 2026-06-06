@@ -2,8 +2,8 @@ funk assign_value_to_id(){
     zahl x;
     x = 42;
 
-    faden y;
-    y = "Hallo Welt";
+    zahl y;
+    y = 2;
 
     x = y;
     y = x;

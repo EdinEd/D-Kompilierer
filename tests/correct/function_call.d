@@ -1,8 +1,8 @@
-funk main(){
-    test(1, 2, 3, 4, "TESAT", testo, 1+1);
+funk main() -> zahl{
+    test(2, "hallo");
     zurück 1;
 }
 
-funk test() -> zahl{
+funk test(zahl a, faden b) -> zahl{
     zurück 2;
 }
