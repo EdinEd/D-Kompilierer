@@ -22,6 +22,8 @@ std::shared_ptr<GlobalDeclPass> checkGlobalDeclarations(UnitNode *rootNode)
     std::cout << "==== CHECKING GLOBAL DECLARATIONS ====" << std::endl;
     auto globalDeclPass = std::make_shared<GlobalDeclPass>();
     globalDeclPass->visit(rootNode);
+    semanticErrors = globalDeclPass->hasErrors();
+    globalDeclPass->printErrors();
     std::cout << "==== PRINTING FUNCTION SYMBOLTABLE ====" << std::endl;
     for (const auto &entry : globalDeclPass->getFunctionTable().getTable())
     {
@@ -41,7 +43,7 @@ std::shared_ptr<Symboltable> constructSymbolTable(UnitNode *rootNode)
     std::cout << "==== CONSTRUCTING SYMBOLTABLE ====" << std::endl;
     SemanticChecker visitor(globalDeclPass->getFunctionTable());
     visitor.visit(rootNode);
-    semanticErrors = visitor.hasErrors();
+    semanticErrors |= visitor.hasErrors();
     visitor.printErrors();
     return visitor.getCurrentVariableSymbolTable();
 }

@@ -1,43 +1,37 @@
 #include "SymboltablePrinter.hh"
+#include "../common/Types.hh"
+#include <algorithm>
+#include <iostream>
+#include <vector>
 
-std::string typeToString(Type type)
+void SymboltablePrinter::printSymboltable(const Symboltable* table, const std::string& prefix)
 {
-    switch (type)
-    {
-    case Type::INTEGER:
-        return "INTEGER";
-    case Type::STRING:
-        return "STRING";
-    case Type::BOOLEAN:
-        return "BOOLEAN";
-    case Type::VOID:
-        return "VOID";
-    default:
-        return "UNKNOWN";
-    }
-}
+    if (!table) return;
 
-void printIndent(int indent)
-{
-    for (int i = 0; i < indent; ++i)
-    {
-        std::cout << "__";
-    }
-}
+    const auto& entries = table->getTable();
+    const auto& children = table->getChilds();
 
-void SymboltablePrinter::printSymboltable(const Symboltable* table, int indent)
-{
-    if (!table)
-        return;
-    for (const auto &entry : table->getTable())
-    {
-        printIndent(indent);
-        std::cout << entry.first << " : " << typeToString(entry.second.type) << " (defined at " << entry.second.location << ")" << std::endl;
+    std::vector<std::pair<std::string, IdentifierInfo>> sortedEntries(entries.begin(), entries.end());
+    std::sort(sortedEntries.begin(), sortedEntries.end(),
+              [](const auto& a, const auto& b) { return a.first < b.first; });
+
+    size_t totalItems = sortedEntries.size() + children.size();
+    size_t itemIndex = 0;
+
+    for (const auto& [name, info] : sortedEntries) {
+        bool isLast = (itemIndex == totalItems - 1);
+        std::cout << prefix << (isLast ? "└── " : "├── ")
+                  << name << " : " << toString(info.type)
+                  << " (Line: " << info.location.line_begin << ":" << info.location.column_begin
+                  << " … " << info.location.line_end << ":" << info.location.column_end << ")"
+                  << std::endl;
+        itemIndex++;
     }
-    for (const auto &child : table->getChilds())
-    {
-        printIndent(indent);
-        std::cout << "Subtable:" << std::endl;
-        SymboltablePrinter::printSymboltable(child.get(), indent + 1);
+
+    for (const auto& child : children) {
+        bool isLast = (itemIndex == totalItems - 1);
+        std::cout << prefix << (isLast ? "└── " : "├── ") << "[scope]" << std::endl;
+        printSymboltable(child.get(), prefix + (isLast ? "    " : "│   "));
+        itemIndex++;
     }
 }
