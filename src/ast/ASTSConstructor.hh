@@ -1,6 +1,6 @@
 #pragma once
 #include "ASTVisitor.hh"
-#include "../symboltable/Symboltable.h"
+#include "../symboltable/Symboltable.hh"
 #include "ASTNode.hh"
 #include <stack>
 

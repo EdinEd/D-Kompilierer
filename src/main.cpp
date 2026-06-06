@@ -4,6 +4,8 @@
 #include "ASTPrinter.hh"
 #include "ASTSConstructor.hh"
 #include "symboltable/SymboltablePrinter.hh"
+#include "symboltable/FunctionSymboltable.hh"
+#include "semantic/GlobalDeclPass.hh"
 #include "manual/parser/MParser.hh"
 #include <memory>
 
@@ -22,6 +24,24 @@ std::shared_ptr<Symboltable> constructSymbolTable(UnitNode *rootNode)
     return visitor.getCurrentSymbolTable();
 }
 
+void checkGlobalDeclarations(UnitNode *rootNode)
+{
+    std::cout << "==== CHECKING GLOBAL DECLARATIONS ====" << std::endl;
+    FunctionSymboltable functionTable;
+    GlobalDeclPass globalDeclPass(functionTable);
+    globalDeclPass.visit(rootNode);
+    std::cout << "==== PRINTING FUNCTION SYMBOLTABLE ====" << std::endl;
+    for (const auto &entry : functionTable.getTable())
+    {
+        std::cout << entry.first << " : " << toString(entry.second.returnType) << " (defined at " << entry.second.location << ")" << std::endl;
+        std::cout << "  Parameters:" << std::endl;
+        for (const auto &paramType : entry.second.parameterTypes)
+        {
+            std::cout << "    - " << toString(paramType) << std::endl;
+        }
+    }
+}
+
 void printSymbolTable(const std::shared_ptr<Symboltable> &symbolTable)
 {
     std::cout << "==== PRINTING SYMBOLTABLE ====" << std::endl;
@@ -30,6 +50,7 @@ void printSymbolTable(const std::shared_ptr<Symboltable> &symbolTable)
 
 void traverseAST(UnitNode *rootNode)
 {
+    checkGlobalDeclarations(rootNode);
     printAST(rootNode);
     auto symbolTable = constructSymbolTable(rootNode);
     printSymbolTable(symbolTable);
@@ -37,7 +58,8 @@ void traverseAST(UnitNode *rootNode)
 
 int main(int argc, char *argv[])
 {
-    try {
+    try
+    {
         int res = 0;
         Driver drv;
         Parser parser = Parser();
@@ -82,10 +104,14 @@ int main(int argc, char *argv[])
                 std::cout << "Parsing failed with " << drv.errors.size() << " error(s)." << std::endl;
             return 1;
         }
-    } catch (const std::exception& e) {
+    }
+    catch (const std::exception &e)
+    {
         std::cerr << "Error: " << e.what() << std::endl;
         return 1;
-    } catch (...) {
+    }
+    catch (...)
+    {
         std::cerr << "Unknown error occurred." << std::endl;
         return 1;
     }

@@ -1,5 +1,5 @@
 #pragma once
-#include "Symboltable.h"
+#include "Symboltable.hh"
 
 class SymboltablePrinter {
 public:
