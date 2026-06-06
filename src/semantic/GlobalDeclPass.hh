@@ -8,6 +8,10 @@ public:
     GlobalDeclPass(FunctionSymboltable &functionTable)
         : functionTable(functionTable) {}
     void visit(UnitNode *rootNode) override;
+    const FunctionSymboltable &getFunctionTable() const
+    {
+        return functionTable;
+    }
 
 private:
     FunctionSymboltable &functionTable;

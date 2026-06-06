@@ -1,13 +1,14 @@
 #pragma once
-#include "ASTVisitor.hh"
+#include "../ast/ASTVisitor.hh"
 #include "../symboltable/Symboltable.hh"
-#include "ASTNode.hh"
+#include "../ast/ASTNode.hh"
+#include "../symboltable/FunctionSymboltable.hh"
 #include <stack>
 
-class ASTSConstructor : public ASTVisitor {
+class SemanticChecker : public ASTVisitor {
 public:
-    ASTSConstructor() = default;
-    std::shared_ptr<Symboltable> getCurrentSymbolTable();
+    SemanticChecker(const FunctionSymboltable& functionTable) : functionTable(functionTable) {}
+    std::shared_ptr<Symboltable> getCurrentVariableSymbolTable();
     
     void visit(UnitNode* rootNode) override;
     void visit(FunctionDefNode* node)override;
@@ -19,7 +20,9 @@ public:
     void visit(VarRefNode* node) override;
     void visit(StringNode* node) override;
     void visit(NumberNode* node) override;
+
 private:
     std::shared_ptr<Symboltable> rootSymbolTable;
-    std::stack<Symboltable*> symbolTableStack;      
+    std::stack<Symboltable*> symbolTableStack;   
+    const FunctionSymboltable& functionTable;   
 };

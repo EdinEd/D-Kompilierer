@@ -2,7 +2,7 @@
 #include "Driver.hh"
 #include "ASTNode.hh"
 #include "ASTPrinter.hh"
-#include "ASTSConstructor.hh"
+#include "semantic/SemanticChecker.hh"
 #include "symboltable/SymboltablePrinter.hh"
 #include "symboltable/FunctionSymboltable.hh"
 #include "semantic/GlobalDeclPass.hh"
@@ -16,15 +16,7 @@ void printAST(UnitNode *rootNode)
     printer.visit(rootNode);
 }
 
-std::shared_ptr<Symboltable> constructSymbolTable(UnitNode *rootNode)
-{
-    std::cout << "==== CONSTRUCTING SYMBOLTABLE ====" << std::endl;
-    ASTSConstructor visitor;
-    visitor.visit(rootNode);
-    return visitor.getCurrentSymbolTable();
-}
-
-void checkGlobalDeclarations(UnitNode *rootNode)
+GlobalDeclPass checkGlobalDeclarations(UnitNode *rootNode)
 {
     std::cout << "==== CHECKING GLOBAL DECLARATIONS ====" << std::endl;
     FunctionSymboltable functionTable;
@@ -40,6 +32,16 @@ void checkGlobalDeclarations(UnitNode *rootNode)
             std::cout << "    - " << toString(paramType) << std::endl;
         }
     }
+    return globalDeclPass;
+}
+
+std::shared_ptr<Symboltable> constructSymbolTable(UnitNode *rootNode)
+{
+    auto globalDeclPass = checkGlobalDeclarations(rootNode);
+    std::cout << "==== CONSTRUCTING SYMBOLTABLE ====" << std::endl;
+    SemanticChecker visitor(globalDeclPass.getFunctionTable());
+    visitor.visit(rootNode);
+    return visitor.getCurrentVariableSymbolTable();
 }
 
 void printSymbolTable(const std::shared_ptr<Symboltable> &symbolTable)
@@ -50,7 +52,6 @@ void printSymbolTable(const std::shared_ptr<Symboltable> &symbolTable)
 
 void traverseAST(UnitNode *rootNode)
 {
-    checkGlobalDeclarations(rootNode);
     printAST(rootNode);
     auto symbolTable = constructSymbolTable(rootNode);
     printSymbolTable(symbolTable);

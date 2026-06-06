@@ -1,6 +1,6 @@
-#include "ASTSConstructor.hh"
+#include "SemanticChecker.hh"
 
-void ASTSConstructor::visit(UnitNode *rootNode)
+void SemanticChecker::visit(UnitNode *rootNode)
 {
     rootSymbolTable = std::make_shared<Symboltable>();
     symbolTableStack.push(rootSymbolTable.get());
@@ -11,7 +11,7 @@ void ASTSConstructor::visit(UnitNode *rootNode)
     symbolTableStack.pop();
 }
 
-void ASTSConstructor::visit(FunctionDefNode *node)
+void SemanticChecker::visit(FunctionDefNode *node)
 {
     IdentifierInfo funcInfo{node->location, node->return_type};
     if (!symbolTableStack.top()->insert(node->name, funcInfo))
@@ -24,7 +24,7 @@ void ASTSConstructor::visit(FunctionDefNode *node)
     }
 }
 
-void ASTSConstructor::visit(FunctionCallNode* node)
+void SemanticChecker::visit(FunctionCallNode *node)
 {
     // TODO: Überarbeiten
     for (const auto &param : node->params)
@@ -33,7 +33,7 @@ void ASTSConstructor::visit(FunctionCallNode* node)
     }
 }
 
-void ASTSConstructor::visit(BlockNode *node)
+void SemanticChecker::visit(BlockNode *node)
 {
     auto newTable = std::make_unique<Symboltable>(symbolTableStack.top());
     Symboltable *childPtr = newTable.get();
@@ -46,7 +46,7 @@ void ASTSConstructor::visit(BlockNode *node)
     symbolTableStack.pop();
 }
 
-void ASTSConstructor::visit(ReturnNode *node)
+void SemanticChecker::visit(ReturnNode *node)
 {
     if (node->expression)
     {
@@ -54,7 +54,7 @@ void ASTSConstructor::visit(ReturnNode *node)
     }
 }
 
-void ASTSConstructor::visit(VarDeclNode *node)
+void SemanticChecker::visit(VarDeclNode *node)
 {
     IdentifierInfo varInfo{node->location, node->type};
     if (!symbolTableStack.top()->insert(node->name, varInfo))
@@ -68,13 +68,13 @@ void ASTSConstructor::visit(VarDeclNode *node)
     }
 }
 
-void ASTSConstructor::visit(BinaryOpNode *node)
+void SemanticChecker::visit(BinaryOpNode *node)
 {
     node->left->accept(*this);
     node->right->accept(*this);
 }
 
-void ASTSConstructor::visit(VarRefNode *node)
+void SemanticChecker::visit(VarRefNode *node)
 {
     IdentifierInfo *info = symbolTableStack.top()->identify(node->name);
     if (!info)
@@ -83,15 +83,15 @@ void ASTSConstructor::visit(VarRefNode *node)
     }
 }
 
-void ASTSConstructor::visit(StringNode *node)
+void SemanticChecker::visit(StringNode *node)
 {
 }
 
-void ASTSConstructor::visit(NumberNode *node)
+void SemanticChecker::visit(NumberNode *node)
 {
 }
 
-std::shared_ptr<Symboltable> ASTSConstructor::getCurrentSymbolTable()
+std::shared_ptr<Symboltable> SemanticChecker::getCurrentVariableSymbolTable()
 {
     return rootSymbolTable;
 }
