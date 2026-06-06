@@ -31,6 +31,8 @@ private:
     Symboltable* constructNewSymbolTable();
 
     Type current_exp_type;
-    void validateBinaryOpCalcTypes(const BinaryOpNode* node, const Type& leftType, const Type& rightType);
-    void validateBinaryOpTypes(const BinaryOpNode* node, const Type& leftType, const Type& rightType);
+    void validateBinaryOpCalcTypes(const SourceLocation &location, const Type& leftType, const Type& rightType);
+    void validateBinaryOpTypes(const SourceLocation &location, const Type& leftType, const Type& rightType);
+
+    
 };

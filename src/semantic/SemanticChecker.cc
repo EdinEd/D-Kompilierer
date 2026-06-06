@@ -55,11 +55,12 @@ void SemanticChecker::visit(FunctionCallNode *node)
 {
     // Check if function is defined
     auto funcSignature = functionTable.identify(node->function_name);
-    if (!funcSignature)    {
+    if (!funcSignature)
+    {
         std::cerr << "Error: Function '" << node->function_name << "' not defined at " << node->location << std::endl;
         return;
     }
-    if(funcSignature->parameterTypes.size() != node->params.size())
+    if (funcSignature->parameterTypes.size() != node->params.size())
     {
         std::cerr << "Error: Function '" << node->function_name << "' called with incorrect number of arguments at " << node->location << std::endl;
         return;
@@ -106,10 +107,12 @@ void SemanticChecker::visit(VarDeclNode *node)
     {
         auto declInfo = symbolTableStack.top()->identify(node->name);
         std::cerr << "Error: Variable '" << node->name << "' already defined at " << declInfo->location << std::endl;
+        return;
     }
     if (node->init_value)
     {
         node->init_value->accept(*this);
+        validateBinaryOpTypes(node->location, node->type, current_exp_type);
     }
 }
 
@@ -128,10 +131,10 @@ void SemanticChecker::visit(BinaryOpNode *node)
     case OperationType::MULTIPLY:
     case OperationType::DIVIDE:
     case OperationType::MODULO:
-        validateBinaryOpCalcTypes(node, left_exp_type, right_exp_type);
+        validateBinaryOpCalcTypes(node->location, left_exp_type, right_exp_type);
         break;
     case OperationType::ASSIGN:
-        validateBinaryOpTypes(node, left_exp_type, right_exp_type);
+        validateBinaryOpTypes(node->location, left_exp_type, right_exp_type);
         break;
     default:
         std::cerr << "Error: Unknown binary operator at " << node->location << std::endl;
@@ -140,14 +143,15 @@ void SemanticChecker::visit(BinaryOpNode *node)
     }
 }
 
-void SemanticChecker::validateBinaryOpTypes(const BinaryOpNode* node, const Type& leftType, const Type& rightType){
-    if(leftType == Type::INVALID || rightType == Type::INVALID)
+void SemanticChecker::validateBinaryOpTypes(const SourceLocation &location, const Type &leftType, const Type &rightType)
+{
+    if (leftType == Type::INVALID || rightType == Type::INVALID)
     {
         current_exp_type = Type::INVALID;
     }
     else if (leftType != rightType)
     {
-        std::cerr << "Error: Type mismatch in binary operation at " << node->location << std::endl;
+        std::cerr << "Error: Type mismatch in binary operation at " << location << std::endl;
         current_exp_type = Type::INVALID;
     }
     else
@@ -156,14 +160,14 @@ void SemanticChecker::validateBinaryOpTypes(const BinaryOpNode* node, const Type
     }
 }
 
-void SemanticChecker::validateBinaryOpCalcTypes(const BinaryOpNode* node, const Type& leftType, const Type& rightType)
+void SemanticChecker::validateBinaryOpCalcTypes(const SourceLocation &location, const Type &leftType, const Type &rightType)
 {
-    if(leftType != Type::INTEGER)
+    if (leftType != Type::INTEGER)
     {
-        std::cerr << "Error: Binary operator requires integer operands at " << node->location << std::endl;
+        std::cerr << "Error: Binary operator requires integer operands at " << location << std::endl;
         current_exp_type = Type::INVALID;
     }
-    validateBinaryOpTypes(node, leftType, rightType);
+    validateBinaryOpTypes(location, leftType, rightType);
 }
 
 void SemanticChecker::visit(VarRefNode *node)
