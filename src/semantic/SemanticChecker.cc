@@ -116,7 +116,54 @@ void SemanticChecker::visit(VarDeclNode *node)
 void SemanticChecker::visit(BinaryOpNode *node)
 {
     node->left->accept(*this);
+    const Type left_exp_type = current_exp_type;
+
     node->right->accept(*this);
+    const Type right_exp_type = current_exp_type;
+
+    switch (node->op)
+    {
+    case OperationType::ADD:
+    case OperationType::SUBTRACT:
+    case OperationType::MULTIPLY:
+    case OperationType::DIVIDE:
+    case OperationType::MODULO:
+        validateBinaryOpCalcTypes(node, left_exp_type, right_exp_type);
+        break;
+    case OperationType::ASSIGN:
+        validateBinaryOpTypes(node, left_exp_type, right_exp_type);
+        break;
+    default:
+        std::cerr << "Error: Unknown binary operator at " << node->location << std::endl;
+        current_exp_type = Type::INVALID;
+        break;
+    }
+}
+
+void SemanticChecker::validateBinaryOpTypes(const BinaryOpNode* node, const Type& leftType, const Type& rightType){
+    if(leftType == Type::INVALID || rightType == Type::INVALID)
+    {
+        current_exp_type = Type::INVALID;
+    }
+    else if (leftType != rightType)
+    {
+        std::cerr << "Error: Type mismatch in binary operation at " << node->location << std::endl;
+        current_exp_type = Type::INVALID;
+    }
+    else
+    {
+        current_exp_type = leftType;
+    }
+}
+
+void SemanticChecker::validateBinaryOpCalcTypes(const BinaryOpNode* node, const Type& leftType, const Type& rightType)
+{
+    if(leftType != Type::INTEGER)
+    {
+        std::cerr << "Error: Binary operator requires integer operands at " << node->location << std::endl;
+        current_exp_type = Type::INVALID;
+    }
+    validateBinaryOpTypes(node, leftType, rightType);
 }
 
 void SemanticChecker::visit(VarRefNode *node)
@@ -125,15 +172,20 @@ void SemanticChecker::visit(VarRefNode *node)
     if (!info)
     {
         std::cerr << "Error: Variable '" << node->name << "' not defined at " << node->location << std::endl;
+        current_exp_type = Type::INVALID;
+        return;
     }
+    current_exp_type = info->type;
 }
 
 void SemanticChecker::visit(StringNode *node)
 {
+    current_exp_type = Type::STRING;
 }
 
 void SemanticChecker::visit(NumberNode *node)
 {
+    current_exp_type = Type::INTEGER;
 }
 
 std::shared_ptr<Symboltable> SemanticChecker::getCurrentVariableSymbolTable()

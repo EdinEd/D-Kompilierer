@@ -29,4 +29,8 @@ private:
     bool addFunctionParametersToTable(const FunctionDefNode &node, Symboltable &symbolTable);
     bool functionBodyMode = false;
     Symboltable* constructNewSymbolTable();
+
+    Type current_exp_type;
+    void validateBinaryOpCalcTypes(const BinaryOpNode* node, const Type& leftType, const Type& rightType);
+    void validateBinaryOpTypes(const BinaryOpNode* node, const Type& leftType, const Type& rightType);
 };
