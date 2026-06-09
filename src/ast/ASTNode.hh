@@ -84,6 +84,17 @@ public:
     void accept(ASTVisitor &visitor) override;
 };
 
+class WhileNode : public ASTNode
+{
+public:
+    std::unique_ptr<ASTNode> condition;
+    std::unique_ptr<ASTNode> body;
+
+    WhileNode(SourceLocation loc, std::unique_ptr<ASTNode> cond, std::unique_ptr<ASTNode> body)
+        : ASTNode(loc, ASTNodeType::WHILE), condition(std::move(cond)), body(std::move(body)) {}
+    void accept(ASTVisitor &visitor) override;
+};
+
 class BlockNode : public ASTNode
 {
 public:

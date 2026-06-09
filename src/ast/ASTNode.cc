@@ -30,6 +30,11 @@ void ReturnNode::accept(ASTVisitor &visitor)
     visitor.visit(this);
 }
 
+void WhileNode::accept(ASTVisitor &visitor)
+{
+    visitor.visit(this);
+}
+
 void BlockNode::accept(ASTVisitor &visitor)
 {
     visitor.visit(this);

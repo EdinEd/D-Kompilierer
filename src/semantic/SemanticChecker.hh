@@ -18,10 +18,11 @@ public:
     
     void visit(UnitNode* rootNode) override;
     void visit(FunctionDefNode* node)override;
-    void visit(FunctionCallNode* node) override;
-    void visit(BlockNode* node) override;
-    void visit(ReturnNode* node) override;
-    void visit(VarDeclNode* node) override;
+    void visit(FunctionCallNode *node) override;
+    void visit(BlockNode *node) override;
+    void visit(ReturnNode *node) override;
+    void visit(WhileNode *node) override;
+    void visit(VarDeclNode *node) override;
     void visit(BinaryOpNode* node) override;
     void visit(VarRefNode* node) override;
     void visit(StringNode* node) override;

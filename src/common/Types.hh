@@ -30,7 +30,8 @@ enum class ASTNodeType
     BLOCK,
     FUNCTION_DEF,
     FUNCTION_CALL,
-    UNIT
+    UNIT,
+    WHILE
 };
 
 inline std::string toString(Type returnType)

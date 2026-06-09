@@ -24,6 +24,7 @@ private:
     void visit(FunctionCallNode *node) override {};
     void visit(BlockNode *node) override {};
     void visit(ReturnNode *node) override {};
+    void visit(WhileNode *node) override {};
     void visit(VarDeclNode *node) override {};
     void visit(BinaryOpNode *node) override {};
     void visit(VarRefNode *node) override {};

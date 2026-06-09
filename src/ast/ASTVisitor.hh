@@ -11,6 +11,7 @@ class BlockNode;
 class FunctionDefNode;
 class FunctionCallNode;
 class UnitNode;
+class WhileNode;
 
 class ASTVisitor
 {
@@ -22,6 +23,7 @@ public:
     virtual void visit(FunctionCallNode *node) = 0;
     virtual void visit(BlockNode *node) = 0;
     virtual void visit(ReturnNode *node) = 0;
+    virtual void visit(WhileNode *node) = 0;
     virtual void visit(VarDeclNode *node) = 0;
     virtual void visit(BinaryOpNode *node) = 0;
     virtual void visit(VarRefNode *node) = 0;

@@ -47,6 +47,7 @@
   LPAREN  "("
   RPAREN  ")"
   RETURN "zurück"
+  WHILE "solange"
   TYPE_INT "zahl"
   TYPE_STRING "faden"
   ARROW  "->"
@@ -77,6 +78,7 @@
 %nterm <Type> variable_type;
 %nterm <std::unique_ptr<VarDeclNode>> var_decl;
 %nterm <std::unique_ptr<ReturnNode>> return_statement;
+%nterm <std::unique_ptr<WhileNode>> while_statement;
 %nterm <std::unique_ptr<BinaryOpNode>> var_assign;
 %nterm <FunctionParameter> param;
 %nterm <std::vector<FunctionParameter>> param_list params;
@@ -163,10 +165,14 @@ contents:
 content_item:
   return_statement { $$ = std::move($1); }
 | var_decl                {$$ = std::move($1);}
+| while_statement         {$$ = std::move($1);}
 | body                    {$$ = std::move($1);}
 | var_assign              {$$ = std::move($1);}
 | func_call SEMICOLON     {$$ = std::move($1);}
 | error SEMICOLON         {yyerrok;};
+
+while_statement:
+  WHILE LPAREN expr RPAREN body { $$ = std::make_unique<WhileNode>(toASTLoc(@$), std::move($3), std::move($5)); };
 
 func_call:
   IDENTIFIER LPAREN expr_list RPAREN {$$ = std::make_unique<FunctionCallNode>(toASTLoc(@$), $1, std::move($3)); };

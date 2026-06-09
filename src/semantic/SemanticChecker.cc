@@ -169,6 +169,21 @@ void SemanticChecker::visit(ReturnNode *node)
     }
 }
 
+void SemanticChecker::visit(WhileNode *node)
+{
+    node->condition->accept(*this);
+    if (current_exp_type != Type::INTEGER && current_exp_type != Type::BOOLEAN && current_exp_type != Type::INVALID)
+    {
+        errors.push_back(std::make_unique<TypeMismatchError>(
+            Type::INTEGER, current_exp_type, ASTNodeType::WHILE, node->condition->location));
+    }
+
+    if (node->body)
+    {
+        node->body->accept(*this);
+    }
+}
+
 void SemanticChecker::visit(VarDeclNode *node)
 {
     IdentifierInfo varInfo{node->location, node->type};

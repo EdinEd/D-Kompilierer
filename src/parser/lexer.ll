@@ -45,6 +45,7 @@ blank   [ \t\r]
 "("        return yy::parser::make_LPAREN (loc);
 ")"        return yy::parser::make_RPAREN (loc);
 "zurück"   return yy::parser::make_RETURN (loc);
+"solange"  return yy::parser::make_WHILE (loc);
 "zahl"      return yy::parser::make_TYPE_INT (loc);
 "faden"     return yy::parser::make_TYPE_STRING (loc);
 "->"       return yy::parser::make_ARROW (loc);

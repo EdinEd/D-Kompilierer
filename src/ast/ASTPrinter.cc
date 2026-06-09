@@ -150,6 +150,23 @@ void ASTPrinter::visit(ReturnNode *node)
     std::cout << std::endl;
 }
 
+void ASTPrinter::visit(WhileNode *node)
+{
+    printIndent();
+    std::cout << "| SOLANGE" << std::endl;
+    indent_level++;
+    printIndent();
+    std::cout << "BEDINGUNG:" << std::endl;
+    indent_level++;
+    node->condition->accept(*this);
+    indent_level--;
+    printIndent();
+    std::cout << "KÖRPER:" << std::endl;
+    indent_level++;
+    node->body->accept(*this);
+    indent_level -= 2;
+}
+
 void ASTPrinter::visit(VarDeclNode *node)
 {
     printIndent();

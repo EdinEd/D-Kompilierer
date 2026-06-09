@@ -49,6 +49,7 @@ private:
         case ASTNodeType::BINARY_OP:   return "binary operation";
         case ASTNodeType::VAR_DECL:    return "variable declaration";
         case ASTNodeType::FUNCTION_CALL: return "function call";
+        case ASTNodeType::WHILE:       return "while loop";
         default:                       return "expression";
         }
     }

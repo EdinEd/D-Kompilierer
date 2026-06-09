@@ -1,0 +1,4 @@
+funk main() {
+    solange ("fehler") {
+    }
+}
