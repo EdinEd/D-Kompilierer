@@ -114,8 +114,9 @@ void ASTPrinter::visit(FunctionCallNode *node)
 {
     printIndent();
     std::cout << "| FUNKTION_CALL: " << node->function_name << std::endl;
-    if (node->params.empty()) return;
-    
+    if (node->params.empty())
+        return;
+
     indent_level++;
     for (const auto &param : node->params)
     {
@@ -213,4 +214,10 @@ void ASTPrinter::visit(NumberNode *node)
 {
     printIndent();
     std::cout << "| NUM: " << node->value << std::endl;
+}
+
+void ASTPrinter::visit(BoolNode *node)
+{
+    printIndent();
+    std::cout << "| BOOL: " << node->value << std::endl;
 }

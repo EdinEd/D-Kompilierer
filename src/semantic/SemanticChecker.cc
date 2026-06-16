@@ -281,6 +281,11 @@ void SemanticChecker::visit(NumberNode *node)
     current_exp_type = Type::INTEGER;
 }
 
+void SemanticChecker::visit(BoolNode* node){
+    current_exp_type = Type::BOOLEAN;
+}
+
+
 std::shared_ptr<Symboltable> SemanticChecker::getCurrentVariableSymbolTable()
 {
     return rootSymbolTable;

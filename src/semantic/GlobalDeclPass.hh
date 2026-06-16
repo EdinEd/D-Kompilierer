@@ -30,6 +30,8 @@ private:
     void visit(VarRefNode *node) override {};
     void visit(StringNode *node) override {};
     void visit(NumberNode *node) override {};
+    void visit(BoolNode *node) override {};
+
 
    
 };

@@ -61,6 +61,9 @@ blank   [ \t\r]
 "/"        return yy::parser::make_SLASH (loc);
 "%"        return yy::parser::make_PERCENT (loc);
 ","        return yy::parser::make_COMMA (loc);
+"richtig"  return yy::parser::make_TRUE (loc);
+"falsch"   return yy::parser::make_FALSE (loc);
+"logik"    return yy::parser::make_TYPE_BOOL (loc);
 
 
 {int}      return make_NUMBER (yytext, loc);

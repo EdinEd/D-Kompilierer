@@ -27,6 +27,8 @@ public:
     void visit(VarRefNode* node) override;
     void visit(StringNode* node) override;
     void visit(NumberNode* node) override;
+    void visit(BoolNode* node) override;
+
 
 private:
     std::shared_ptr<Symboltable> rootSymbolTable;

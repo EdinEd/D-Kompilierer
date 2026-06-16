@@ -32,6 +32,14 @@ public:
     void accept(ASTVisitor &visitor) override;
 };
 
+class BoolNode : public ASTNode {
+public:
+    bool value;
+    BoolNode(SourceLocation loc, bool val) : ASTNode(loc, ASTNodeType::BOOLEAN), value(val) {}
+    
+    void accept(ASTVisitor& visitor) override;
+};
+
 class StringNode : public ASTNode
 {
 public:

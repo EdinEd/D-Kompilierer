@@ -5,6 +5,11 @@ void NumberNode::accept(ASTVisitor &visitor)
     visitor.visit(this);
 }
 
+void BoolNode::accept(ASTVisitor &visitor)
+{
+    visitor.visit(this);
+}
+
 void StringNode::accept(ASTVisitor &visitor)
 {
     visitor.visit(this);

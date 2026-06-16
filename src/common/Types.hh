@@ -31,7 +31,8 @@ enum class ASTNodeType
     FUNCTION_DEF,
     FUNCTION_CALL,
     UNIT,
-    WHILE
+    WHILE,
+    BOOLEAN
 };
 
 inline std::string toString(Type returnType)

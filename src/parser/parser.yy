@@ -50,6 +50,7 @@
   WHILE "solange"
   TYPE_INT "zahl"
   TYPE_STRING "faden"
+  TYPE_BOOL "logik"
   ARROW  "->"
   LBRACE  "{"
   RBRACE  "}"
@@ -63,11 +64,15 @@
   SLASH "/"
   PERCENT "%"
   COMMA ","
+  TRUE "richtig"
+  FALSE "falsch"
+  
 ;
 
 %token <std::string> IDENTIFIER "identifier"
 %token <int> NUMBER "number"
 %token <std::string> STRING
+%nterm <bool> bool_expr;
 %nterm <std::unique_ptr<UnitNode>> unit;
 %nterm <std::unique_ptr<BlockNode>> body contents;
 %nterm <std::unique_ptr<UnitNode>> functions;
@@ -126,7 +131,8 @@ function_type:
 
 variable_type:
   TYPE_INT { $$ = Type::INTEGER; }
-  | TYPE_STRING { $$ = Type::STRING; };
+  | TYPE_STRING { $$ = Type::STRING; }
+  | TYPE_BOOL {$$ = Type::BOOLEAN;};
 
 var_decl:
   variable_type IDENTIFIER SEMICOLON { $$ = std::make_unique<VarDeclNode>(toASTLoc(@$), $1, $2, nullptr); }
@@ -139,6 +145,7 @@ expr:
   NUMBER { $$ = std::make_unique<NumberNode>(toASTLoc(@$), $1); }
   | STRING { $$ = std::make_unique<StringNode>(toASTLoc(@$), $1); }
   | IDENTIFIER { $$ = std::make_unique<VarRefNode>(toASTLoc(@$), $1); }
+  | bool_expr {$$ = std::make_unique<BoolNode>(toASTLoc(@$), $1);}
   | func_call { $$ = std::move($1); }
   | expr PLUS expr { $$ = std::make_unique<BinaryOpNode>(toASTLoc(@$), OperationType::ADD, std::move($1), std::move($3)); }
   | expr MINUS expr { $$ = std::make_unique<BinaryOpNode>(toASTLoc(@$), OperationType::SUBTRACT, std::move($1), std::move($3)); }
@@ -146,6 +153,10 @@ expr:
   | expr SLASH expr { $$ = std::make_unique<BinaryOpNode>(toASTLoc(@$), OperationType::DIVIDE, std::move($1), std::move($3)); }
   | expr PERCENT expr { $$ = std::make_unique<BinaryOpNode>(toASTLoc(@$), OperationType::MODULO, std::move($1), std::move($3)); }
   | LPAREN expr RPAREN { $$ = std::move($2); };
+
+bool_expr:
+  TRUE {$$ = true;}
+  | FALSE {$$ = false;};
 
 expr_list:
   %empty { $$ = std::vector<std::unique_ptr<ASTNode>>{}; }
