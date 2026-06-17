@@ -1,8 +1,14 @@
 
-funk test(){
-    zahl a;
+funk haupt(){
+    zahl b;
+    faden c;
+    {
+        zahl c;
+    }
+    
+    b = b + c;
 }
 
-funk test(){
-    zahl b;
+funk haupt(){
+    
 }

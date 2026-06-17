@@ -1,5 +1,4 @@
 
-funk äpfel() -> zahl {
+funk haupt() {
     zahl zähler = 10;
-    zurück zähler;
 }

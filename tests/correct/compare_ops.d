@@ -1,5 +1,5 @@
 
-funk main() -> zahl {
+funk haupt() {
     zahl a;
     zahl b;
     logik vergleich = a == b;
@@ -18,8 +18,6 @@ funk main() -> zahl {
     }
 
     solange(1 < 2){
-        
-    }
 
-    zurück 0;
+    }
 }

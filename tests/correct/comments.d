@@ -1,6 +1,5 @@
 
 €€ Dies ist ein Kommentar
-funk main() -> zahl {
+funk haupt() {
     €€ Ein Kommentar in der Funktion
-    zurück 0;
 }

@@ -1,4 +1,6 @@
 
-funk test1 () -> faden{
-    zurück "Hallo Welt
+funk haupt() -> faden{
+    faden hallo =  "Hallo Welt;
+    zurück hallo;
 }
+

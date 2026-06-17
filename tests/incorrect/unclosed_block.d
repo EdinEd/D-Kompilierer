@@ -1,5 +1,5 @@
 
-funk error() {
+funk haupt() {
     {
-        zurück 0;
+        
 }

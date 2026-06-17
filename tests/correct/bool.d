@@ -1,4 +1,4 @@
-funk main() -> leer {
+funk haupt() {
     logik hallo = richtig;
     solange(falsch){
 

@@ -1,6 +1,6 @@
-funk main() {
-    zahl i = 0;
+funk haupt() {
+    logik i = richtig;
     solange (i) {
-        i = i - 1;
+        i = falsch;
     }
 }

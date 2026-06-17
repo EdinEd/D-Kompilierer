@@ -1,4 +1,3 @@
 
-funk main() -> zahl{
-    zurück 5;
+funk haupt(){
 }

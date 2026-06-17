@@ -1,4 +1,4 @@
-funk assign_value_to_id(){
+funk haupt(){
     zahl x;
     x = 42;
 
