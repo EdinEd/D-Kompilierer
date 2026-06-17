@@ -55,6 +55,11 @@ void FunctionCallNode::accept(ASTVisitor &visitor)
     visitor.visit(this);
 }
 
+void IfNode::accept(ASTVisitor &visitor)
+{
+    visitor.visit(this);
+}
+
 void UnitNode::accept(ASTVisitor &visitor)
 {
     visitor.visit(this);

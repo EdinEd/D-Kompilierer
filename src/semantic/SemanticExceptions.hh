@@ -50,6 +50,7 @@ private:
         case ASTNodeType::VAR_DECL:    return "variable declaration";
         case ASTNodeType::FUNCTION_CALL: return "function call";
         case ASTNodeType::WHILE:       return "while loop";
+        case ASTNodeType::IF:          return "if condition";
         default:                       return "expression";
         }
     }

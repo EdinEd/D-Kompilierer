@@ -70,6 +70,8 @@ blank   [ \t\r]
 "<="       return yy::parser::make_LEQ (loc);
 ">="       return yy::parser::make_GEQ (loc);
 ">"        return yy::parser::make_GREATER (loc);
+"wenn"     return yy::parser::make_IF (loc);
+"sonst"    return yy::parser::make_ELSE (loc);
 
 
 {int}      return make_NUMBER (yytext, loc);

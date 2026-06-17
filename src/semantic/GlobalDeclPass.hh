@@ -31,6 +31,7 @@ private:
     void visit(StringNode *node) override {};
     void visit(NumberNode *node) override {};
     void visit(BoolNode *node) override {};
+    void visit(IfNode *node) override {};
 
     bool checkGlobalSemantics();
     const std::string mainFunctionName = "haupt";

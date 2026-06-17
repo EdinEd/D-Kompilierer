@@ -312,6 +312,40 @@ void SemanticChecker::visit(BoolNode *node)
     current_exp_type = Type::BOOLEAN;
 }
 
+void SemanticChecker::visit(IfNode *node)
+{
+    node->condition->accept(*this);
+    if (current_exp_type != Type::BOOLEAN)
+    {
+        errors.push_back(std::make_unique<TypeMismatchError>(
+            Type::BOOLEAN, current_exp_type, ASTNodeType::IF, node->condition->location));
+    }
+
+    if (node->then_body)
+    {
+        node->then_body->accept(*this);
+    }
+
+    for (const auto &eif : node->else_ifs)
+    {
+        eif.condition->accept(*this);
+        if (current_exp_type != Type::BOOLEAN)
+        {
+            errors.push_back(std::make_unique<TypeMismatchError>(
+                Type::BOOLEAN, current_exp_type, ASTNodeType::IF, eif.condition->location));
+        }
+        if (eif.body)
+        {
+            eif.body->accept(*this);
+        }
+    }
+
+    if (node->else_body)
+    {
+        node->else_body->accept(*this);
+    }
+}
+
 std::shared_ptr<Symboltable> SemanticChecker::getCurrentVariableSymbolTable()
 {
     return rootSymbolTable;

@@ -103,6 +103,34 @@ public:
     void accept(ASTVisitor &visitor) override;
 };
 
+struct ElseIfBranch
+{
+    std::unique_ptr<ASTNode> condition;
+    std::unique_ptr<BlockNode> body;
+};
+
+class IfNode : public ASTNode
+{
+public:
+    std::unique_ptr<ASTNode> condition;
+    std::unique_ptr<BlockNode> then_body;
+    std::vector<ElseIfBranch> else_ifs;
+    std::unique_ptr<BlockNode> else_body;
+
+    IfNode(SourceLocation loc,
+           std::unique_ptr<ASTNode> cond,
+           std::unique_ptr<BlockNode> then_b,
+           std::vector<ElseIfBranch> eifs,
+           std::unique_ptr<BlockNode> else_b)
+        : ASTNode(loc, ASTNodeType::IF),
+          condition(std::move(cond)),
+          then_body(std::move(then_b)),
+          else_ifs(std::move(eifs)),
+          else_body(std::move(else_b)) {}
+
+    void accept(ASTVisitor &visitor) override;
+};
+
 class BlockNode : public ASTNode
 {
 public:

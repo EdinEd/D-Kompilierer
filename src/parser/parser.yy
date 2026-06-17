@@ -72,6 +72,8 @@
   LEQ "<="
   GEQ ">="
   GREATER ">"
+  IF "wenn"
+  ELSE "sonst"
 ;
 
 %token <std::string> IDENTIFIER "identifier"
@@ -94,6 +96,8 @@
 %nterm <std::vector<FunctionParameter>> param_list params;
 %nterm <std::unique_ptr<FunctionCallNode>> func_call;
 %nterm <std::vector<std::unique_ptr<ASTNode>>> expr_list exprs;
+%nterm <std::unique_ptr<IfNode>> if_statement;
+%nterm <std::vector<ElseIfBranch>> else_ifs;
 
 
 
@@ -192,6 +196,7 @@ content_item:
 | body                    {$$ = std::move($1);}
 | var_assign              {$$ = std::move($1);}
 | func_call SEMICOLON     {$$ = std::move($1);}
+| if_statement            {$$ = std::move($1);}
 | error SEMICOLON         {yyerrok;};
 
 while_statement:
@@ -203,6 +208,20 @@ func_call:
 return_statement:
   RETURN expr SEMICOLON { $$ = std::make_unique<ReturnNode>(toASTLoc(@$), std::move($2)); }
 | RETURN error SEMICOLON { yyerrok; };
+
+if_statement:
+  IF LPAREN expr RPAREN body else_ifs
+    { $$ = std::make_unique<IfNode>(toASTLoc(@$), std::move($3), std::move($5), std::move($6), nullptr); }
+| IF LPAREN expr RPAREN body else_ifs ELSE body
+    { $$ = std::make_unique<IfNode>(toASTLoc(@$), std::move($3), std::move($5), std::move($6), std::move($8)); }
+;
+
+else_ifs:
+  %empty
+    { $$ = std::vector<ElseIfBranch>{}; }
+| else_ifs ELSE IF LPAREN expr RPAREN body
+    { $1.push_back(ElseIfBranch{std::move($5), std::move($7)}); $$ = std::move($1); }
+;
 %%
 
 void yy::parser::error (const location_type& l, const std::string& m)
