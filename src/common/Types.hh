@@ -7,7 +7,13 @@ enum class OperationType
     MULTIPLY,
     DIVIDE,
     ASSIGN,
-    MODULO
+    MODULO,
+    EQ,
+    NEQ,
+    GREATER,
+    LESS,
+    GEQ,
+    LEQ
 };
 
 enum class Type

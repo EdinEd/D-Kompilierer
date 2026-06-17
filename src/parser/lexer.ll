@@ -64,6 +64,12 @@ blank   [ \t\r]
 "richtig"  return yy::parser::make_TRUE (loc);
 "falsch"   return yy::parser::make_FALSE (loc);
 "logik"    return yy::parser::make_TYPE_BOOL (loc);
+"=="       return yy::parser::make_EQ (loc);
+"!="       return yy::parser::make_NEQ (loc);
+"<"        return yy::parser::make_LESS (loc);
+"<="       return yy::parser::make_LEQ (loc);
+">="       return yy::parser::make_GEQ (loc);
+">"        return yy::parser::make_GREATER (loc);
 
 
 {int}      return make_NUMBER (yytext, loc);

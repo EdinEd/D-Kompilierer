@@ -66,7 +66,12 @@
   COMMA ","
   TRUE "richtig"
   FALSE "falsch"
-  
+  EQ "=="
+  NEQ "!="
+  LESS "<"
+  LEQ "<="
+  GEQ ">="
+  GREATER ">"
 ;
 
 %token <std::string> IDENTIFIER "identifier"
@@ -95,6 +100,7 @@
 %printer { yyo << $$; } <int> <std::string>;
 %printer { yyo << "[AST Node]"; } <std::unique_ptr<ASTNode>> <std::unique_ptr<BlockNode>> <std::unique_ptr<UnitNode>> <std::unique_ptr<FunctionDefNode>> <Type>; 
 
+%left EQ NEQ LESS LEQ GEQ GREATER
 %left PLUS MINUS
 %left STAR SLASH PERCENT
 
@@ -152,6 +158,12 @@ expr:
   | expr STAR expr { $$ = std::make_unique<BinaryOpNode>(toASTLoc(@$), OperationType::MULTIPLY, std::move($1), std::move($3)); }
   | expr SLASH expr { $$ = std::make_unique<BinaryOpNode>(toASTLoc(@$), OperationType::DIVIDE, std::move($1), std::move($3)); }
   | expr PERCENT expr { $$ = std::make_unique<BinaryOpNode>(toASTLoc(@$), OperationType::MODULO, std::move($1), std::move($3)); }
+  | expr EQ expr { $$ = std::make_unique<BinaryOpNode>(toASTLoc(@$), OperationType::EQ, std::move($1), std::move($3)); }
+  | expr NEQ expr { $$ = std::make_unique<BinaryOpNode>(toASTLoc(@$), OperationType::NEQ, std::move($1), std::move($3)); }
+  | expr LESS expr { $$ = std::make_unique<BinaryOpNode>(toASTLoc(@$), OperationType::LESS, std::move($1), std::move($3)); }
+  | expr LEQ expr { $$ = std::make_unique<BinaryOpNode>(toASTLoc(@$), OperationType::LEQ, std::move($1), std::move($3)); }
+  | expr GEQ expr { $$ = std::make_unique<BinaryOpNode>(toASTLoc(@$), OperationType::GEQ, std::move($1), std::move($3)); }
+  | expr GREATER expr { $$ = std::make_unique<BinaryOpNode>(toASTLoc(@$), OperationType::GREATER, std::move($1), std::move($3)); }
   | LPAREN expr RPAREN { $$ = std::move($2); };
 
 bool_expr:
