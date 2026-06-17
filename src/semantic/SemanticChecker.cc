@@ -221,6 +221,14 @@ void SemanticChecker::visit(BinaryOpNode *node)
     case OperationType::ASSIGN:
         validateBinaryOpTypes(node->location, left_exp_type, right_exp_type);
         break;
+    case OperationType::EQ:
+    case OperationType::NEQ:
+    case OperationType::LESS:
+    case OperationType::LEQ:
+    case OperationType::GEQ:
+    case OperationType::GREATER:
+        validateBinaryOpCompTypes(node->location, left_exp_type, right_exp_type);
+        break;
     default:
         errors.push_back(std::make_unique<GenericSemanticError>(
             "Unknown binary operator", node->location));
@@ -258,6 +266,24 @@ void SemanticChecker::validateBinaryOpCalcTypes(const SourceLocation &location, 
     validateBinaryOpTypes(location, leftType, rightType);
 }
 
+void SemanticChecker::validateBinaryOpCompTypes(const SourceLocation &location, const Type &leftType, const Type &rightType)
+{
+    if (leftType == Type::INVALID || rightType == Type::INVALID)
+    {
+        current_exp_type = Type::INVALID;
+    }
+    else if (leftType != rightType)
+    {
+        errors.push_back(std::make_unique<TypeMismatchError>(
+            leftType, rightType, ASTNodeType::BINARY_OP, location));
+        current_exp_type = Type::INVALID;
+    }
+    else
+    {
+        current_exp_type = Type::BOOLEAN;
+    }
+}
+
 void SemanticChecker::visit(VarRefNode *node)
 {
     IdentifierInfo *info = symbolTableStack.top()->identify(node->name);
@@ -281,10 +307,10 @@ void SemanticChecker::visit(NumberNode *node)
     current_exp_type = Type::INTEGER;
 }
 
-void SemanticChecker::visit(BoolNode* node){
+void SemanticChecker::visit(BoolNode *node)
+{
     current_exp_type = Type::BOOLEAN;
 }
-
 
 std::shared_ptr<Symboltable> SemanticChecker::getCurrentVariableSymbolTable()
 {

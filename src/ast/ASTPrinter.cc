@@ -72,6 +72,18 @@ std::string getOpTypeName(const OperationType &op)
         return "=";
     case OperationType::MODULO:
         return "%";
+    case OperationType::EQ:
+        return "==";
+    case OperationType::NEQ:
+        return "!=";
+    case OperationType::LESS:
+        return "<";
+    case OperationType::LEQ:
+        return "<=";
+    case OperationType::GEQ:
+        return ">=";
+    case OperationType::GREATER:
+        return ">";
     default:
         return "unbekannte Operation";
     }
