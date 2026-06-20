@@ -7,9 +7,17 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(BISON 3.8.2 REQUIRED)
 find_package(FLEX REQUIRED)
 
+find_package(LLVM REQUIRED CONFIG)
+message(STATUS "Found LLVM version: ${LLVM_PACKAGE_VERSION}")
+message(STATUS "Using LLVMConfig.cmake in: ${LLVM_DIR}")
+include_directories(${LLVM_INCLUDE_DIRS})
+add_definitions(${LLVM_DEFINITIONS})
+llvm_map_components_to_libnames(llvm_libs Core Support native)
+
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/src/ast
     ${CMAKE_CURRENT_SOURCE_DIR}/src/parser
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/ir-generator
     ${CMAKE_CURRENT_BINARY_DIR}
 )
 
@@ -47,8 +55,10 @@ add_executable(${PROJECT_NAME}
     ${CMAKE_CURRENT_SOURCE_DIR}/src/manual/parser/Sets.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/src/manual/lexer/MLexer.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/src/manual/lexer/MLexer.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/ir-generator/CodegenVisitor.cc
         ${BISON_MyParser_OUTPUTS}
     ${FLEX_MyScanner_OUTPUTS}
 )
 
 set_target_properties(${PROJECT_NAME} PROPERTIES OUTPUT_NAME "compiler")
+target_link_libraries(${PROJECT_NAME} PRIVATE ${llvm_libs})
