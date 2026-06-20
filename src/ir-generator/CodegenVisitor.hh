@@ -4,6 +4,9 @@
 #include "llvm/IR/LLVMContext.h"
 #include "llvm/IR/Module.h"
 #include "llvm/IR/Instructions.h"
+#include <system_error>
+#include "llvm/Support/FileSystem.h"
+#include "llvm/Support/raw_ostream.h"
 #include "../common/Types.hh"
 #include <memory>
 #include <map>
@@ -25,6 +28,8 @@ private:
     llvm::Value *current_value = nullptr;
     llvm::Value *logError(const std::string &str);
     llvm::Type *getLLVMType(Type t);
+    llvm::Function *declareFunction(const FunctionDefNode *functionDef);
+    void safeOutput();
 
     void visit(FunctionDefNode *node) override;
     void visit(FunctionCallNode *node) override;

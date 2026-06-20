@@ -9,6 +9,22 @@ CodegenVisitor::CodegenVisitor()
     module = std::make_unique<llvm::Module>("Compiler", *context);
 }
 
+void CodegenVisitor::safeOutput()
+{
+    std::error_code errorCode;
+    llvm::raw_fd_ostream dest("output.ll", errorCode, llvm::sys::fs::OF_None);
+
+    if (errorCode)
+    {
+        std::cerr << "Could not open output file: " << errorCode.message() << std::endl;
+        return;
+    }
+    module->print(dest, nullptr);
+    dest.flush();
+
+    std::cout << "Succesfully saved output." << std::endl;
+}
+
 llvm::Type *CodegenVisitor::getLLVMType(Type t)
 {
     switch (t)
@@ -32,20 +48,25 @@ llvm::Value *CodegenVisitor::logError(const std::string &str)
     return nullptr;
 }
 
+llvm::Function *CodegenVisitor::declareFunction(const FunctionDefNode *functionDef)
+{
+    std::vector<llvm::Type *> paramTypes;
+    for (const auto &param : functionDef->parameters)
+    {
+        paramTypes.push_back(getLLVMType(param.type));
+    }
+
+    llvm::Type *returnType = getLLVMType(functionDef->return_type);
+    llvm::FunctionType *funcType = llvm::FunctionType::get(returnType, paramTypes, false);
+
+    return llvm::Function::Create(funcType, llvm::Function::ExternalLinkage, functionDef->name, module.get());
+}
+
 void CodegenVisitor::visit(UnitNode *rootNode)
 {
     for (const auto &func : rootNode->functions)
     {
-        std::vector<llvm::Type *> paramTypes;
-        for (const auto &param : func->parameters)
-        {
-            paramTypes.push_back(getLLVMType(param.type));
-        }
-
-        llvm::Type *returnType = getLLVMType(func->return_type);
-        llvm::FunctionType *funcType = llvm::FunctionType::get(returnType, paramTypes, false);
-        
-        llvm::Function::Create(funcType, llvm::Function::ExternalLinkage, func->name, module.get());
+        declareFunction(func.get());
     }
 
     for (const auto &func : rootNode->functions)
@@ -53,6 +74,7 @@ void CodegenVisitor::visit(UnitNode *rootNode)
         visit(func.get());
     }
     module->print(llvm::outs(), nullptr);
+    safeOutput();
 }
 
 void CodegenVisitor::visit(FunctionDefNode *node)
@@ -61,15 +83,7 @@ void CodegenVisitor::visit(FunctionDefNode *node)
 
     if (!function)
     {
-        std::vector<llvm::Type *> paramTypes;
-        for (const auto &param : node->parameters)
-        {
-            paramTypes.push_back(getLLVMType(param.type));
-        }
-
-        llvm::Type *returnType = getLLVMType(node->return_type);
-        llvm::FunctionType *funcType = llvm::FunctionType::get(returnType, paramTypes, false);
-        function = llvm::Function::Create(funcType, llvm::Function::ExternalLinkage, node->name, module.get());
+        function = declareFunction(node);
     }
 
     llvm::BasicBlock *entryBlock = llvm::BasicBlock::Create(*context, "entry", function);
@@ -111,8 +125,6 @@ void CodegenVisitor::visit(FunctionDefNode *node)
         }
         return;
     }
-
-    // Falls es gar keinen Body gibt (sollte bei dir nicht vorkommen)
     function->eraseFromParent();
 }
 
