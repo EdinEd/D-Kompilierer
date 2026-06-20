@@ -36,6 +36,20 @@ void CodegenVisitor::visit(UnitNode *rootNode)
 {
     for (const auto &func : rootNode->functions)
     {
+        std::vector<llvm::Type *> paramTypes;
+        for (const auto &param : func->parameters)
+        {
+            paramTypes.push_back(getLLVMType(param.type));
+        }
+
+        llvm::Type *returnType = getLLVMType(func->return_type);
+        llvm::FunctionType *funcType = llvm::FunctionType::get(returnType, paramTypes, false);
+        
+        llvm::Function::Create(funcType, llvm::Function::ExternalLinkage, func->name, module.get());
+    }
+
+    for (const auto &func : rootNode->functions)
+    {
         visit(func.get());
     }
     module->print(llvm::outs(), nullptr);
