@@ -73,3 +73,8 @@ $RECYCLE.BIN/
 *.stackdump
 *.dmp
 *.pdb
+
+# === IR Test Artifacts ===
+tests/ir/build/
+output.ll
+test_runner
