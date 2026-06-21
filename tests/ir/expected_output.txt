@@ -1,0 +1,24 @@
+test_add: expected=3 actual=3 PASS
+test_sub: expected=2 actual=2 PASS
+test_mul: expected=12 actual=12 PASS
+test_div: expected=3 actual=3 PASS
+test_mod: expected=1 actual=1 PASS
+test_eq_true: expected=1 actual=1 PASS
+test_eq_false: expected=0 actual=0 PASS
+test_neq: expected=1 actual=1 PASS
+test_less: expected=1 actual=1 PASS
+test_greater: expected=1 actual=1 PASS
+test_leq: expected=1 actual=1 PASS
+test_geq: expected=1 actual=1 PASS
+test_var_decl_init: expected=42 actual=42 PASS
+test_var_assign: expected=99 actual=99 PASS
+test_while: expected=5 actual=5 PASS
+test_if_then: expected=1 actual=1 PASS
+test_if_else: expected=2 actual=2 PASS
+test_else_if: expected=3 actual=3 PASS
+test_func_call: expected=7 actual=7 PASS
+test_nested_block: expected=5 actual=5 PASS
+test_complex_expr: expected=15 actual=15 PASS
+test_comments: expected=0 actual=0 PASS
+
+All tests PASSED
