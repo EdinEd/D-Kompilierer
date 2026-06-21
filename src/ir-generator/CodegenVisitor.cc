@@ -121,7 +121,6 @@ void CodegenVisitor::visit(FunctionDefNode *node)
         if (llvm::verifyFunction(*function, &llvm::errs()))
         {
             logError("LLVM Verification failed for function: " + node->name);
-            // function->eraseFromParent();
         }
         return;
     }
@@ -155,11 +154,40 @@ void CodegenVisitor::visit(ReturnNode *node)
 
 void CodegenVisitor::visit(WhileNode *node)
 {
+    llvm::Function *function = builder->GetInsertBlock()->getParent();
+
+    llvm::BasicBlock *condBlock = llvm::BasicBlock::Create(*context, "while.cond", function);
+    llvm::BasicBlock *bodyBlock = llvm::BasicBlock::Create(*context, "while.body");
+    llvm::BasicBlock *exitBlock = llvm::BasicBlock::Create(*context, "while.exit");
+
+    builder->CreateBr(condBlock);
+
+    builder->SetInsertPoint(condBlock);
+    
     node->condition->accept(*this);
+    llvm::Value *condValue = current_value;
+    
+    if (!condValue) {
+        logError("Error generating the while loop");
+        return;
+    }
+    builder->CreateCondBr(condValue, bodyBlock, exitBlock);
+
+    function->insert(function->end(), bodyBlock);
+    builder->SetInsertPoint(bodyBlock);
+
     if (node->body)
     {
         node->body->accept(*this);
     }
+    if (!builder->GetInsertBlock()->getTerminator())
+    {
+        builder->CreateBr(condBlock);
+    }
+
+
+    function->insert(function->end(), exitBlock);
+    builder->SetInsertPoint(exitBlock);
 }
 
 void CodegenVisitor::visit(IfNode *node)
