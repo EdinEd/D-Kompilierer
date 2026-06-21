@@ -10,5 +10,7 @@ funk haupt() {
 }
 
 funk add(zahl a, zahl b) -> zahl{
+    a = a * 2;
+    b = a +b;
     zurück a + b;
 }

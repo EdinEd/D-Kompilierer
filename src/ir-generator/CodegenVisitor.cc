@@ -129,10 +129,12 @@ void CodegenVisitor::visit(FunctionDefNode *node)
 
 void CodegenVisitor::visit(BlockNode *node)
 {
+    std::map<std::string, llvm::AllocaInst *> previousValues = namedValues;
     for (const auto &stmt : node->statements)
     {
         stmt->accept(*this);
     }
+    namedValues = previousValues;
 }
 
 void CodegenVisitor::visit(ReturnNode *node)
@@ -163,11 +165,12 @@ void CodegenVisitor::visit(WhileNode *node)
     builder->CreateBr(condBlock);
 
     builder->SetInsertPoint(condBlock);
-    
+
     node->condition->accept(*this);
     llvm::Value *condValue = current_value;
-    
-    if (!condValue) {
+
+    if (!condValue)
+    {
         logError("Error generating the while loop");
         return;
     }
@@ -185,30 +188,103 @@ void CodegenVisitor::visit(WhileNode *node)
         builder->CreateBr(condBlock);
     }
 
-
     function->insert(function->end(), exitBlock);
     builder->SetInsertPoint(exitBlock);
 }
 
 void CodegenVisitor::visit(IfNode *node)
 {
+    llvm::Function *function = builder->GetInsertBlock()->getParent();
+
+    llvm::BasicBlock *exitBlock = llvm::BasicBlock::Create(*context, "if.exit");
+
     node->condition->accept(*this);
-    if (node->then_body)
-    {
+    llvm::Value *condValue = current_value;
+    
+    if (!condValue) {
+        logError("Error creating if");
+        return;
+    }
+
+    llvm::BasicBlock *thenBlock = llvm::BasicBlock::Create(*context, "if.then");
+    
+    llvm::BasicBlock *nextBlock = nullptr;
+
+    if (!node->else_ifs.empty()) {
+        nextBlock = llvm::BasicBlock::Create(*context, "elseif.cond");
+    } else if (node->else_body) {
+        nextBlock = llvm::BasicBlock::Create(*context, "if.else");
+    } else {
+        nextBlock = exitBlock;
+    }
+
+    builder->CreateCondBr(condValue, thenBlock, nextBlock);
+
+    function->insert(function->end(), thenBlock);
+    builder->SetInsertPoint(thenBlock);
+    
+    if (node->then_body) {
         node->then_body->accept(*this);
     }
-    for (const auto &eif : node->else_ifs)
-    {
+    
+    if (!builder->GetInsertBlock()->getTerminator()) {
+        builder->CreateBr(exitBlock);
+    }
+
+    for (size_t i = 0; i < node->else_ifs.size(); ++i) {
+        // Den Condition-Block des aktuellen Else-Ifs einfügen
+        function->insert(function->end(), nextBlock);
+        builder->SetInsertPoint(nextBlock);
+
+        const auto &eif = node->else_ifs[i];
+        
         eif.condition->accept(*this);
-        if (eif.body)
-        {
+        condValue = current_value;
+        if (!condValue) {
+            logError("error at else-if condition");
+            return;
+        }
+
+        llvm::BasicBlock *eifBodyBlock = llvm::BasicBlock::Create(*context, "elseif.body");
+        llvm::BasicBlock *eifNextBlock = nullptr;
+
+        if (i + 1 < node->else_ifs.size()) {
+            eifNextBlock = llvm::BasicBlock::Create(*context, "elseif.cond");
+        } else if (node->else_body) {
+            eifNextBlock = llvm::BasicBlock::Create(*context, "if.else");
+        } else {
+            eifNextBlock = exitBlock;
+        }
+
+        builder->CreateCondBr(condValue, eifBodyBlock, eifNextBlock);
+
+        function->insert(function->end(), eifBodyBlock);
+        builder->SetInsertPoint(eifBodyBlock);
+        
+        if (eif.body) {
             eif.body->accept(*this);
         }
+        
+        if (!builder->GetInsertBlock()->getTerminator()) {
+            builder->CreateBr(exitBlock);
+        }
+
+        nextBlock = eifNextBlock;
     }
-    if (node->else_body)
-    {
+
+
+    if (node->else_body) {
+        function->insert(function->end(), nextBlock);
+        builder->SetInsertPoint(nextBlock);
+        
         node->else_body->accept(*this);
+        
+        if (!builder->GetInsertBlock()->getTerminator()) {
+            builder->CreateBr(exitBlock);
+        }
     }
+    function->insert(function->end(), exitBlock);
+    builder->SetInsertPoint(exitBlock);
 }
 
 void CodegenVisitor::visit(VarDeclNode *node)

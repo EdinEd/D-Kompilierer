@@ -1,17 +1,24 @@
 #include <iostream>
-
-// Sagt dem C++ Compiler: Die Funktion 'haupt' existiert in einer anderen Datei
-// und sie verwendet kein C++ Name-Mangling (daher "C").
-extern "C" int add(int i, int j);
+extern "C" int condition(int i, int j);
+extern "C" int schleife(int i);
 
 int main()
 {
-    std::cout << "Starte generiertes Programm..." << std::endl;
+    std::cout << "**** TEST 1 ****" << std::endl;
+    std::cout << "CONDITION" << std::endl;
 
-    // Hier rufen wir DEINEN generierten Code auf!
-    int result = add(1, 2);
+    int result = condition(1, 3);
+    std::cout << "...." << std::endl;
+    std::cout << "OUTPUT: " << result << std::endl
+              << std::endl;
 
-    std::cout << "Dein Compiler hat folgendes berechnet: " << result << std::endl;
+    std::cout << "**** TEST 2 ****" << std::endl;
+    std::cout << "SCHLEIFE" << std::endl;
+
+    result = schleife(100);
+    std::cout << "...." << std::endl;
+    std::cout << "OUTPUT: " << result << std::endl
+              << std::endl;
 
     return 0;
 }

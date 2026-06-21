@@ -1,4 +1,4 @@
-funk haupt() {
+funk haupt(){
     logik condition = richtig;
     zahl heppa;
     wenn(condition){
