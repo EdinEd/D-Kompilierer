@@ -1,7 +1,8 @@
 # Manual Parser
 
-> **📄 Disclaimer: AI-Assisted Documentation**
-> This documentation was co-authored with the assistance of an AI tool to ensure clarity, structured readability, and compliance with C++ best practices. However, the software architecture, the underlying grammar logic, and the code design were entirely conceived and verified by human developers.
+> ⚠️ **No Longer Maintained**
+> This manual parser implementation is deprecated and no longer working.
+> Use the default Flex/Bison parser instead.
 
 The manual parser is a hand-written, tool-independent alternative to the Flex/Bison frontend. It lives entirely in `src/manual/` and requires no code generation step.
 

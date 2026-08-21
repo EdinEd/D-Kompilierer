@@ -1,48 +1,98 @@
-# Compiler Projekt
+# D-Kompilierer
 
-Dieses Repository enthält einen benutzerdefinierten Compiler, der mithilfe von Flex und Bison entwickelt wurde. Das Programm parst den Quellcode, generiert einen abstrakten Syntaxbaum (AST) und baut eine Symboltabelle für die weitere semantische Analyse auf.
+A compiler for a German-keyword programming language (`.d` files) built with Flex/Bison. Generates LLVM IR for further compilation to native code.
 
-## Voraussetzungen
+> **University Project** — This was a compiler construction course project. The codebase is complete and serves as an educational reference implementation. No further development is expected.
 
-Um das Projekt lokal zu kompilieren, müssen folgende Werkzeuge auf dem System installiert sein:
-* **Bison** (neueste Version)
-* **Flex** (neueste Version)
-* **CMake**
-* **C++ Compiler** (z. B. GCC oder Clang)
-* *(Optional)* **Docker** & **Docker Compose** (für isolierte Builds)
+## Prerequisites
 
----
+- **Bison** ≥ 3.8.2 (macOS: install via Homebrew, system version is too old)
+- **Flex**
+- **CMake** ≥ 3.28
+- **C++17** compiler (GCC or Clang)
+- **LLVM** (for IR generation and native compilation)
 
-## Kompilieren
+## Building
 
-Du hast zwei Möglichkeiten, den Compiler zu bauen: lokal auf deinem Rechner oder vollständig isoliert über Docker.
+```bash
+mkdir build && cd build
+cmake ..
+make
+```
 
-* ### Option 1: Lokal kompilieren (via CMake)
+**macOS users:** Homebrew Bison is required:
+```bash
+cmake -DBISON_EXECUTABLE=$(brew --prefix bison)/bin/bison ..
+```
 
-    Wenn Abhängigkeiten alle auf PC:
+## Usage & LLVM Workflow
 
-    ```bash
-    mkdir build
-    cd build
-    cmake ..
-    make
+The compiler parses `.d` source files and generates LLVM IR (`.ll` files). To produce an executable binary, you need to compile the IR and link it with a C/C++ wrapper.
 
-* ### Option 2: Kompilieren mit Docker Compose
-    Schnelles compilieren ohne lokale abhängigkeiten:
+### Basic Usage
+```bash
+./build/compiler program.d
+```
+This generates `output.ll` in the current directory.
 
-    ```Bash
-    docker compose up --build
+### Full Compilation Workflow
 
-* ### Lokal ausführen:
-    ```Bash
-    ./compiler pfad/zur/datei.txt
+```bash
+# Step 1: Compile D source to LLVM IR
+./build/compiler program.d
 
-* ### Mit docker ausführen
-    ```Bash
-    docker compose run --rm compiler pfad/zur/datei.txt
+# Step 2: Compile IR to object file
+llc -filetype=obj output.ll -o program.o
 
----
+# Step 3: Link with C/C++ wrapper
+clang wrapper.cc program.o -o program
 
-## Manueller Parser
+# Step 4: Run
+./program
+```
 
-Neben dem Flex/Bison-Parser gibt es einen handgeschriebenen rekursiv-absteigenden Parser. Details unter [`src/manual/README.md`](src/manual/README.md).
+See `src/llvm/` for example C++ wrapper files and test IR.
+
+### Command-Line Flags
+- `-p` — Trace parsing (Flex/Bison parser only)
+- `-s` — Trace scanning (Flex/Bison parser only)
+
+## Project Structure
+
+| Directory | Purpose |
+|-----------|---------|
+| `src/parser/` | Flex/Bison parser + Driver |
+| `src/manual/` | Hand-written recursive-descent parser (⚠️ no longer maintained) |
+| `src/ast/` | AST node types, Visitor pattern, ASTPrinter, AST→Symboltable |
+| `src/symboltable/` | Symbol table implementation and printer |
+| `src/semantic/` | Semantic analysis passes (GlobalDeclPass, SemanticChecker) |
+| `src/ir-generator/` | LLVM IR code generation (CodegenVisitor) |
+| `src/llvm/` | Example C++ wrappers and test IR files |
+| `src/common/` | Shared types: SourceLocation, Token, Types |
+| `tests/` | Test suite with correct/incorrect programs |
+
+## Testing
+
+```bash
+cd tests && bash parser_test.sh
+```
+
+The test script:
+- Rebuilds the compiler from scratch
+- Runs all `.d` files in `tests/correct/` (expects exit code 0)
+- Runs all `.d` files in `tests/incorrect/` (expects exit code 1)
+- Automatically detects Homebrew Bison on macOS
+
+## Manual Parser Note
+
+The manual parser in `src/manual/` is **no longer maintained**. Use the default Flex/Bison parser for all compilation tasks. See `src/manual/README.md` for architectural documentation.
+
+## Language Features
+
+The source language uses German keywords such as:
+- `funk` (function)
+- `leer` (void)
+- `zurück` (return)
+- and others
+
+See test files in `tests/correct/` for example programs.
