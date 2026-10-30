@@ -1,0 +1,14 @@
+.git
+build/
+build-*/
+cmake-build-*/
+tests/build/
+tests/ir/build/
+output.ll
+tests/output.ll
+test_runner
+*.o
+*.out
+.DS_Store
+.idea/
+.vscode/

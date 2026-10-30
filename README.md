@@ -25,6 +25,38 @@ make
 cmake -DBISON_EXECUTABLE=$(brew --prefix bison)/bin/bison ..
 ```
 
+## Docker Usage
+
+Using Docker Compose is the easiest way to build and run the compiler without installing Bison, Flex, CMake, or LLVM locally. The container image bundles the `compiler` binary alongside `llvm` (`llc`) and `clang` (`clang++`).
+
+### Build the Image
+```bash
+docker compose build
+```
+
+### Compile a `.d` File
+The repository root is mounted at `/workspace` inside the container, so `output.ll` is written directly to your project directory:
+```bash
+docker compose run --rm compiler tests/correct/minimal.d
+```
+
+Command-line flags (`-p`, `-s`) can be passed before the input file:
+```bash
+docker compose run --rm compiler -p tests/correct/minimal.d
+```
+
+### Link & Run Generated IR in Docker
+You can also link the generated `output.ll` with a C/C++ wrapper and execute the resulting binary inside the container:
+```bash
+docker compose run --rm --entrypoint bash compiler -c \
+  "compiler tests/ir/compiler_test.d && clang++ tests/ir/test_runner.cc output.ll -o runner && ./runner"
+```
+
+To open an interactive shell inside the container environment:
+```bash
+docker compose run --rm --entrypoint bash compiler
+```
+
 ## Usage & LLVM Workflow
 
 The compiler parses `.d` source files and generates LLVM IR (`.ll` files). To produce an executable binary, you need to compile the IR and link it with a C/C++ wrapper.

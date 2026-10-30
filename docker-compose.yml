@@ -5,8 +5,7 @@ services:
       dockerfile: Dockerfile
     image: compiler
     volumes:
-      - .:/app/source
-      - ./src/parser:/app/code
+      - .:/workspace
     stdin_open: true
     tty: true
-    working_dir: /app/code
+    working_dir: /workspace
