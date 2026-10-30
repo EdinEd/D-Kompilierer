@@ -7,7 +7,13 @@ enum class OperationType
     MULTIPLY,
     DIVIDE,
     ASSIGN,
-    MODULO
+    MODULO,
+    EQ,
+    NEQ,
+    GREATER,
+    LESS,
+    GEQ,
+    LEQ
 };
 
 enum class Type
@@ -31,7 +37,9 @@ enum class ASTNodeType
     FUNCTION_DEF,
     FUNCTION_CALL,
     UNIT,
-    WHILE
+    WHILE,
+    BOOLEAN,
+    IF
 };
 
 inline std::string toString(Type returnType)

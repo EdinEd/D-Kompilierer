@@ -1,5 +1,4 @@
 
-funk error() {
+funk haupt() {
     zahl x
-    zurück 0;
 }

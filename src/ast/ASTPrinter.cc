@@ -51,6 +51,8 @@ std::string getNodeTypeName(const ASTNodeType &t)
         return "Funktion";
     case ASTNodeType::UNIT:
         return "Einheit";
+    case ASTNodeType::IF:
+        return "Wenn";
     default:
         return "Knoten";
     }
@@ -72,6 +74,18 @@ std::string getOpTypeName(const OperationType &op)
         return "=";
     case OperationType::MODULO:
         return "%";
+    case OperationType::EQ:
+        return "==";
+    case OperationType::NEQ:
+        return "!=";
+    case OperationType::LESS:
+        return "<";
+    case OperationType::LEQ:
+        return "<=";
+    case OperationType::GEQ:
+        return ">=";
+    case OperationType::GREATER:
+        return ">";
     default:
         return "unbekannte Operation";
     }
@@ -114,8 +128,9 @@ void ASTPrinter::visit(FunctionCallNode *node)
 {
     printIndent();
     std::cout << "| FUNKTION_CALL: " << node->function_name << std::endl;
-    if (node->params.empty()) return;
-    
+    if (node->params.empty())
+        return;
+
     indent_level++;
     for (const auto &param : node->params)
     {
@@ -213,4 +228,55 @@ void ASTPrinter::visit(NumberNode *node)
 {
     printIndent();
     std::cout << "| NUM: " << node->value << std::endl;
+}
+
+void ASTPrinter::visit(BoolNode *node)
+{
+    printIndent();
+    std::cout << "| BOOL: " << node->value << std::endl;
+}
+
+void ASTPrinter::visit(IfNode *node)
+{
+    printIndent();
+    std::cout << "| WENN" << std::endl;
+    indent_level++;
+    printIndent();
+    std::cout << "BEDINGUNG:" << std::endl;
+    indent_level++;
+    node->condition->accept(*this);
+    indent_level--;
+    printIndent();
+    std::cout << "DANN:" << std::endl;
+    indent_level++;
+    node->then_body->accept(*this);
+    indent_level--;
+
+    for (const auto &eif : node->else_ifs)
+    {
+        printIndent();
+        std::cout << "| SONST WENN" << std::endl;
+        indent_level++;
+        printIndent();
+        std::cout << "BEDINGUNG:" << std::endl;
+        indent_level++;
+        eif.condition->accept(*this);
+        indent_level--;
+        printIndent();
+        std::cout << "DANN:" << std::endl;
+        indent_level++;
+        eif.body->accept(*this);
+        indent_level--;
+    }
+
+    if (node->else_body)
+    {
+        printIndent();
+        std::cout << "| SONST" << std::endl;
+        indent_level++;
+        node->else_body->accept(*this);
+        indent_level--;
+    }
+
+    indent_level--;
 }

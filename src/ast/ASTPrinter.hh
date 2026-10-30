@@ -14,6 +14,8 @@ public:
     void visit(VarRefNode *node) override;
     void visit(StringNode *node) override;
     void visit(NumberNode *node) override;
+    void visit(BoolNode *node) override;
+    void visit(IfNode *node) override;
 
 private:
     int indent_level = 0;

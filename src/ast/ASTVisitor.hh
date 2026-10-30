@@ -12,6 +12,8 @@ class FunctionDefNode;
 class FunctionCallNode;
 class UnitNode;
 class WhileNode;
+class BoolNode;
+class IfNode;
 
 class ASTVisitor
 {
@@ -29,4 +31,6 @@ public:
     virtual void visit(VarRefNode *node) = 0;
     virtual void visit(StringNode *node) = 0;
     virtual void visit(NumberNode *node) = 0;
+    virtual void visit(BoolNode  *node) = 0;
+    virtual void visit(IfNode *node) = 0;
 };

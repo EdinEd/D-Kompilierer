@@ -6,6 +6,7 @@
 #include "symboltable/SymboltablePrinter.hh"
 #include "semantic/GlobalDeclPass.hh"
 #include "manual/parser/MParser.hh"
+#include "ir-generator/CodegenVisitor.hh"
 #include <memory>
 
 bool semanticErrors = false;
@@ -61,6 +62,12 @@ void traverseAST(UnitNode *rootNode)
     printSymbolTable(symbolTable);
 }
 
+void generateIR(UnitNode *root)
+{
+    auto visitor = CodegenVisitor();
+    visitor.visit(root);
+}
+
 int main(int argc, char *argv[])
 {
     try
@@ -113,6 +120,10 @@ int main(int argc, char *argv[])
         {
             std::cout << "Semantic analysis completed with errors." << std::endl;
             return 1;
+        }
+        else
+        {
+            generateIR(drv.ast_root.get());
         }
     }
     catch (const std::exception &e)

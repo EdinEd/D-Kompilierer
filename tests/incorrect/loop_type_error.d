@@ -1,4 +1,4 @@
-funk main() {
+funk haupt() {
     solange ("fehler") {
     }
 }

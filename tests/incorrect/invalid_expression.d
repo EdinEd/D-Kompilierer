@@ -1,9 +1,5 @@
 €€ ---> === <---
-funk test1(){
+funk haupt(){
     zahl a = "hallo" + 2;
-}
-
-€€ ---> === <---
-funk test2(){
-    zahl a = 2 + b;
+    zahl b = 2 + c;
 }

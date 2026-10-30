@@ -27,6 +27,9 @@ public:
     void visit(VarRefNode* node) override;
     void visit(StringNode* node) override;
     void visit(NumberNode* node) override;
+    void visit(BoolNode* node) override;
+    void visit(IfNode* node) override;
+
 
 private:
     std::shared_ptr<Symboltable> rootSymbolTable;
@@ -43,6 +46,7 @@ private:
 
     Type current_exp_type;
     void validateBinaryOpCalcTypes(const SourceLocation &location, const Type& leftType, const Type& rightType);
+    void validateBinaryOpCompTypes(const SourceLocation &location, const Type& leftType, const Type& rightType);
     void validateBinaryOpTypes(const SourceLocation &location, const Type& leftType, const Type& rightType);
     void validateFuncDeclCorrectness(const Type& returnType, const bool& hasReturn);
     bool validateFuncSignature(const FunctionCallNode* node, const FunctionSignature* funcSignature = nullptr);

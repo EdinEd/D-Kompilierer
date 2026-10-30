@@ -1,10 +1,9 @@
 
-funk nested() -> zahl {
+funk haupt() {
     {
         zahl x;
         {
             faden s;
         }
     }
-    zurück 0;
 }

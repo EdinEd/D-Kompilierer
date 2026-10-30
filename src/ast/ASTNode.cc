@@ -5,6 +5,11 @@ void NumberNode::accept(ASTVisitor &visitor)
     visitor.visit(this);
 }
 
+void BoolNode::accept(ASTVisitor &visitor)
+{
+    visitor.visit(this);
+}
+
 void StringNode::accept(ASTVisitor &visitor)
 {
     visitor.visit(this);
@@ -46,6 +51,11 @@ void FunctionDefNode::accept(ASTVisitor &visitor)
 }
 
 void FunctionCallNode::accept(ASTVisitor &visitor)
+{
+    visitor.visit(this);
+}
+
+void IfNode::accept(ASTVisitor &visitor)
 {
     visitor.visit(this);
 }

@@ -172,10 +172,10 @@ void SemanticChecker::visit(ReturnNode *node)
 void SemanticChecker::visit(WhileNode *node)
 {
     node->condition->accept(*this);
-    if (current_exp_type != Type::INTEGER && current_exp_type != Type::BOOLEAN && current_exp_type != Type::INVALID)
+    if (current_exp_type != Type::BOOLEAN)
     {
         errors.push_back(std::make_unique<TypeMismatchError>(
-            Type::INTEGER, current_exp_type, ASTNodeType::WHILE, node->condition->location));
+            Type::BOOLEAN, current_exp_type, ASTNodeType::WHILE, node->condition->location));
     }
 
     if (node->body)
@@ -221,6 +221,14 @@ void SemanticChecker::visit(BinaryOpNode *node)
     case OperationType::ASSIGN:
         validateBinaryOpTypes(node->location, left_exp_type, right_exp_type);
         break;
+    case OperationType::EQ:
+    case OperationType::NEQ:
+    case OperationType::LESS:
+    case OperationType::LEQ:
+    case OperationType::GEQ:
+    case OperationType::GREATER:
+        validateBinaryOpCompTypes(node->location, left_exp_type, right_exp_type);
+        break;
     default:
         errors.push_back(std::make_unique<GenericSemanticError>(
             "Unknown binary operator", node->location));
@@ -258,6 +266,24 @@ void SemanticChecker::validateBinaryOpCalcTypes(const SourceLocation &location, 
     validateBinaryOpTypes(location, leftType, rightType);
 }
 
+void SemanticChecker::validateBinaryOpCompTypes(const SourceLocation &location, const Type &leftType, const Type &rightType)
+{
+    if (leftType == Type::INVALID || rightType == Type::INVALID)
+    {
+        current_exp_type = Type::INVALID;
+    }
+    else if (leftType != rightType)
+    {
+        errors.push_back(std::make_unique<TypeMismatchError>(
+            leftType, rightType, ASTNodeType::BINARY_OP, location));
+        current_exp_type = Type::INVALID;
+    }
+    else
+    {
+        current_exp_type = Type::BOOLEAN;
+    }
+}
+
 void SemanticChecker::visit(VarRefNode *node)
 {
     IdentifierInfo *info = symbolTableStack.top()->identify(node->name);
@@ -279,6 +305,45 @@ void SemanticChecker::visit(StringNode *node)
 void SemanticChecker::visit(NumberNode *node)
 {
     current_exp_type = Type::INTEGER;
+}
+
+void SemanticChecker::visit(BoolNode *node)
+{
+    current_exp_type = Type::BOOLEAN;
+}
+
+void SemanticChecker::visit(IfNode *node)
+{
+    node->condition->accept(*this);
+    if (current_exp_type != Type::BOOLEAN)
+    {
+        errors.push_back(std::make_unique<TypeMismatchError>(
+            Type::BOOLEAN, current_exp_type, ASTNodeType::IF, node->condition->location));
+    }
+
+    if (node->then_body)
+    {
+        node->then_body->accept(*this);
+    }
+
+    for (const auto &eif : node->else_ifs)
+    {
+        eif.condition->accept(*this);
+        if (current_exp_type != Type::BOOLEAN)
+        {
+            errors.push_back(std::make_unique<TypeMismatchError>(
+                Type::BOOLEAN, current_exp_type, ASTNodeType::IF, eif.condition->location));
+        }
+        if (eif.body)
+        {
+            eif.body->accept(*this);
+        }
+    }
+
+    if (node->else_body)
+    {
+        node->else_body->accept(*this);
+    }
 }
 
 std::shared_ptr<Symboltable> SemanticChecker::getCurrentVariableSymbolTable()

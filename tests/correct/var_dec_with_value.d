@@ -1,7 +1,4 @@
-funk int() {
+funk haupt() {
     zahl x = 10;
-}
-
-funk string() {
-    faden x = "das ist ein string";
+    faden y = "das ist ein string";
 }

@@ -1,4 +1,4 @@
-funk invalid_assign_to_id(){
+funk haupt(){
     int x;
     x = ;
 }

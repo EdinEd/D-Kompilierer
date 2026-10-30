@@ -50,6 +50,7 @@
   WHILE "solange"
   TYPE_INT "zahl"
   TYPE_STRING "faden"
+  TYPE_BOOL "logik"
   ARROW  "->"
   LBRACE  "{"
   RBRACE  "}"
@@ -63,11 +64,22 @@
   SLASH "/"
   PERCENT "%"
   COMMA ","
+  TRUE "richtig"
+  FALSE "falsch"
+  EQ "=="
+  NEQ "!="
+  LESS "<"
+  LEQ "<="
+  GEQ ">="
+  GREATER ">"
+  IF "wenn"
+  ELSE "sonst"
 ;
 
 %token <std::string> IDENTIFIER "identifier"
 %token <int> NUMBER "number"
 %token <std::string> STRING
+%nterm <bool> bool_expr;
 %nterm <std::unique_ptr<UnitNode>> unit;
 %nterm <std::unique_ptr<BlockNode>> body contents;
 %nterm <std::unique_ptr<UnitNode>> functions;
@@ -84,12 +96,15 @@
 %nterm <std::vector<FunctionParameter>> param_list params;
 %nterm <std::unique_ptr<FunctionCallNode>> func_call;
 %nterm <std::vector<std::unique_ptr<ASTNode>>> expr_list exprs;
+%nterm <std::unique_ptr<IfNode>> if_statement;
+%nterm <std::vector<ElseIfBranch>> else_ifs;
 
 
 
 %printer { yyo << $$; } <int> <std::string>;
 %printer { yyo << "[AST Node]"; } <std::unique_ptr<ASTNode>> <std::unique_ptr<BlockNode>> <std::unique_ptr<UnitNode>> <std::unique_ptr<FunctionDefNode>> <Type>; 
 
+%left EQ NEQ LESS LEQ GEQ GREATER
 %left PLUS MINUS
 %left STAR SLASH PERCENT
 
@@ -126,7 +141,8 @@ function_type:
 
 variable_type:
   TYPE_INT { $$ = Type::INTEGER; }
-  | TYPE_STRING { $$ = Type::STRING; };
+  | TYPE_STRING { $$ = Type::STRING; }
+  | TYPE_BOOL {$$ = Type::BOOLEAN;};
 
 var_decl:
   variable_type IDENTIFIER SEMICOLON { $$ = std::make_unique<VarDeclNode>(toASTLoc(@$), $1, $2, nullptr); }
@@ -139,13 +155,24 @@ expr:
   NUMBER { $$ = std::make_unique<NumberNode>(toASTLoc(@$), $1); }
   | STRING { $$ = std::make_unique<StringNode>(toASTLoc(@$), $1); }
   | IDENTIFIER { $$ = std::make_unique<VarRefNode>(toASTLoc(@$), $1); }
+  | bool_expr {$$ = std::make_unique<BoolNode>(toASTLoc(@$), $1);}
   | func_call { $$ = std::move($1); }
   | expr PLUS expr { $$ = std::make_unique<BinaryOpNode>(toASTLoc(@$), OperationType::ADD, std::move($1), std::move($3)); }
   | expr MINUS expr { $$ = std::make_unique<BinaryOpNode>(toASTLoc(@$), OperationType::SUBTRACT, std::move($1), std::move($3)); }
   | expr STAR expr { $$ = std::make_unique<BinaryOpNode>(toASTLoc(@$), OperationType::MULTIPLY, std::move($1), std::move($3)); }
   | expr SLASH expr { $$ = std::make_unique<BinaryOpNode>(toASTLoc(@$), OperationType::DIVIDE, std::move($1), std::move($3)); }
   | expr PERCENT expr { $$ = std::make_unique<BinaryOpNode>(toASTLoc(@$), OperationType::MODULO, std::move($1), std::move($3)); }
+  | expr EQ expr { $$ = std::make_unique<BinaryOpNode>(toASTLoc(@$), OperationType::EQ, std::move($1), std::move($3)); }
+  | expr NEQ expr { $$ = std::make_unique<BinaryOpNode>(toASTLoc(@$), OperationType::NEQ, std::move($1), std::move($3)); }
+  | expr LESS expr { $$ = std::make_unique<BinaryOpNode>(toASTLoc(@$), OperationType::LESS, std::move($1), std::move($3)); }
+  | expr LEQ expr { $$ = std::make_unique<BinaryOpNode>(toASTLoc(@$), OperationType::LEQ, std::move($1), std::move($3)); }
+  | expr GEQ expr { $$ = std::make_unique<BinaryOpNode>(toASTLoc(@$), OperationType::GEQ, std::move($1), std::move($3)); }
+  | expr GREATER expr { $$ = std::make_unique<BinaryOpNode>(toASTLoc(@$), OperationType::GREATER, std::move($1), std::move($3)); }
   | LPAREN expr RPAREN { $$ = std::move($2); };
+
+bool_expr:
+  TRUE {$$ = true;}
+  | FALSE {$$ = false;};
 
 expr_list:
   %empty { $$ = std::vector<std::unique_ptr<ASTNode>>{}; }
@@ -169,6 +196,7 @@ content_item:
 | body                    {$$ = std::move($1);}
 | var_assign              {$$ = std::move($1);}
 | func_call SEMICOLON     {$$ = std::move($1);}
+| if_statement            {$$ = std::move($1);}
 | error SEMICOLON         {yyerrok;};
 
 while_statement:
@@ -180,6 +208,20 @@ func_call:
 return_statement:
   RETURN expr SEMICOLON { $$ = std::make_unique<ReturnNode>(toASTLoc(@$), std::move($2)); }
 | RETURN error SEMICOLON { yyerrok; };
+
+if_statement:
+  IF LPAREN expr RPAREN body else_ifs
+    { $$ = std::make_unique<IfNode>(toASTLoc(@$), std::move($3), std::move($5), std::move($6), nullptr); }
+| IF LPAREN expr RPAREN body else_ifs ELSE body
+    { $$ = std::make_unique<IfNode>(toASTLoc(@$), std::move($3), std::move($5), std::move($6), std::move($8)); }
+;
+
+else_ifs:
+  %empty
+    { $$ = std::vector<ElseIfBranch>{}; }
+| else_ifs ELSE IF LPAREN expr RPAREN body
+    { $1.push_back(ElseIfBranch{std::move($5), std::move($7)}); $$ = std::move($1); }
+;
 %%
 
 void yy::parser::error (const location_type& l, const std::string& m)
